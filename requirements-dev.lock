@@ -1,0 +1,18 @@
+# Generated for Python 3.12 by ENG-001. Includes the runtime lock.
+-r requirements.lock
+
+colorama==0.4.6
+coverage==7.16.0
+hypothesis==6.167.1
+iniconfig==2.3.0
+librt==0.15.0
+mypy==1.20.2
+mypy_extensions==1.1.0
+packaging==26.3
+pathspec==1.1.1
+pluggy==1.6.0
+Pygments==2.21.0
+pytest==8.4.2
+pytest-cov==6.3.0
+ruff==0.16.5
+sortedcontainers==2.4.0
