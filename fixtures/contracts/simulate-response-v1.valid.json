@@ -1,0 +1,21 @@
+{
+  "protocol_version": "1.0.0",
+  "request_id": "014f69a0-23d1-4f41-a540-3ce73ac646bd",
+  "engine_version": "0.1.0",
+  "rules_version": "1.0.0",
+  "map_id": "arena_mvp_v1",
+  "replay_version": "1.0.0",
+  "result": {
+    "winner": "A",
+    "reason": "ko",
+    "score_a": 0,
+    "score_b": 0,
+    "hp_a": 6,
+    "hp_b": 0,
+    "rounds_completed": 0,
+    "individual_turns": 1,
+    "actions": 1
+  },
+  "replay_sha256": null,
+  "replay": null
+}

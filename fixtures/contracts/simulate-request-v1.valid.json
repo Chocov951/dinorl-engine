@@ -1,0 +1,18 @@
+{
+  "protocol_version": "1.0.0",
+  "request_id": "014f69a0-23d1-4f41-a540-3ce73ac646bd",
+  "rules_version": "1.0.0",
+  "map_id": "arena_mvp_v1",
+  "seed": 12345,
+  "controllers": {
+    "A": {
+      "kind": "scripted",
+      "id": "aggressive-v1"
+    },
+    "B": {
+      "kind": "scripted",
+      "id": "opportunist-v1"
+    }
+  },
+  "include_replay": true
+}

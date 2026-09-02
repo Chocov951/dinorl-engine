@@ -1,0 +1,276 @@
+{
+  "replay_version": "1.0.0",
+  "rules_version": "1.0.0",
+  "action_version": "1.0.0",
+  "observation_version": "1.0.0",
+  "engine_version": "0.1.0",
+  "map_id": "arena_mvp_v1",
+  "seed": 12345,
+  "first_actor": "A",
+  "controllers": {
+    "A": {
+      "kind": "scripted",
+      "id": "aggressive-v1"
+    },
+    "B": {
+      "kind": "scripted",
+      "id": "opportunist-v1"
+    }
+  },
+  "events": [
+    {
+      "seq": 0,
+      "type": "match_started",
+      "round": 1,
+      "turn": 0,
+      "actor": "A",
+      "action": null,
+      "cost": {
+        "movement": 0,
+        "endurance": 0
+      },
+      "effects": [],
+      "state": {
+        "active_actor": "A",
+        "turn": 0,
+        "round": 1,
+        "terminal": false,
+        "winner": null,
+        "end_reason": null,
+        "raptors": {
+          "A": {
+            "position": [8, 0],
+            "hp": 6,
+            "endurance": 5,
+            "movement_points": 3,
+            "carcass_score": 0,
+            "main_action_available": true,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          },
+          "B": {
+            "position": [0, 8],
+            "hp": 6,
+            "endurance": 5,
+            "movement_points": 0,
+            "carcass_score": 0,
+            "main_action_available": true,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          }
+        },
+        "carcasses": {
+          "carcass_left_a": {
+            "status": "available",
+            "pending_actor": null
+          },
+          "carcass_center": {
+            "status": "active",
+            "pending_actor": null,
+            "reactivate_on_turn": null
+          },
+          "carcass_left_b": {
+            "status": "available",
+            "pending_actor": null
+          }
+        }
+      }
+    },
+    {
+      "seq": 1,
+      "type": "turn_started",
+      "round": 1,
+      "turn": 0,
+      "actor": "A",
+      "action": null,
+      "cost": {
+        "movement": 0,
+        "endurance": 0
+      },
+      "effects": [],
+      "automatic_effects": [],
+      "state": {
+        "active_actor": "A",
+        "turn": 0,
+        "round": 1,
+        "terminal": false,
+        "winner": null,
+        "end_reason": null,
+        "raptors": {
+          "A": {
+            "position": [8, 0],
+            "hp": 6,
+            "endurance": 5,
+            "movement_points": 3,
+            "carcass_score": 0,
+            "main_action_available": true,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          },
+          "B": {
+            "position": [0, 8],
+            "hp": 6,
+            "endurance": 5,
+            "movement_points": 0,
+            "carcass_score": 0,
+            "main_action_available": true,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          }
+        },
+        "carcasses": {
+          "carcass_left_a": {
+            "status": "available",
+            "pending_actor": null
+          },
+          "carcass_center": {
+            "status": "active",
+            "pending_actor": null,
+            "reactivate_on_turn": null
+          },
+          "carcass_left_b": {
+            "status": "available",
+            "pending_actor": null
+          }
+        }
+      }
+    },
+    {
+      "seq": 2,
+      "type": "action_resolved",
+      "round": 1,
+      "turn": 0,
+      "actor": "A",
+      "action": "BITE",
+      "cost": {
+        "movement": 1,
+        "endurance": 2
+      },
+      "effects": [
+        {
+          "type": "damage_dealt",
+          "actor": "A",
+          "target": "B",
+          "amount": 2
+        }
+      ],
+      "state": {
+        "active_actor": "A",
+        "turn": 0,
+        "round": 1,
+        "terminal": true,
+        "winner": "A",
+        "end_reason": "ko",
+        "raptors": {
+          "A": {
+            "position": [8, 0],
+            "hp": 6,
+            "endurance": 3,
+            "movement_points": 2,
+            "carcass_score": 0,
+            "main_action_available": false,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          },
+          "B": {
+            "position": [8, 1],
+            "hp": 0,
+            "endurance": 1,
+            "movement_points": 0,
+            "carcass_score": 0,
+            "main_action_available": false,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          }
+        },
+        "carcasses": {
+          "carcass_left_a": {
+            "status": "available",
+            "pending_actor": null
+          },
+          "carcass_center": {
+            "status": "active",
+            "pending_actor": null,
+            "reactivate_on_turn": null
+          },
+          "carcass_left_b": {
+            "status": "available",
+            "pending_actor": null
+          }
+        }
+      }
+    },
+    {
+      "seq": 3,
+      "type": "match_ended",
+      "round": 1,
+      "turn": 0,
+      "actor": "A",
+      "action": null,
+      "cost": {
+        "movement": 0,
+        "endurance": 0
+      },
+      "effects": [],
+      "state": {
+        "active_actor": "A",
+        "turn": 0,
+        "round": 1,
+        "terminal": true,
+        "winner": "A",
+        "end_reason": "ko",
+        "raptors": {
+          "A": {
+            "position": [8, 0],
+            "hp": 6,
+            "endurance": 3,
+            "movement_points": 2,
+            "carcass_score": 0,
+            "main_action_available": false,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          },
+          "B": {
+            "position": [8, 1],
+            "hp": 0,
+            "endurance": 1,
+            "movement_points": 0,
+            "carcass_score": 0,
+            "main_action_available": false,
+            "voluntary_move_done": false,
+            "rest_pending": false,
+            "consumption_pending": null
+          }
+        },
+        "carcasses": {
+          "carcass_left_a": {
+            "status": "available",
+            "pending_actor": null
+          },
+          "carcass_center": {
+            "status": "active",
+            "pending_actor": null,
+            "reactivate_on_turn": null
+          },
+          "carcass_left_b": {
+            "status": "available",
+            "pending_actor": null
+          }
+        }
+      }
+    }
+  ],
+  "result": {
+    "winner": "A",
+    "reason": "ko",
+    "rounds_completed": 0,
+    "individual_turns": 1
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/simulate-request-v1.schema.json",
+  "title": "DinoRL simulate request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "request_id",
+    "rules_version",
+    "map_id",
+    "seed",
+    "controllers",
+    "include_replay"
+  ],
+  "properties": {
+    "protocol_version": {"const": "1.0.0"},
+    "request_id": {"type": "string", "format": "uuid"},
+    "rules_version": {"const": "1.0.0"},
+    "map_id": {"const": "arena_mvp_v1"},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 9223372036854775807},
+    "controllers": {"$ref": "#/$defs/controllers"},
+    "include_replay": {"type": "boolean"}
+  },
+  "$defs": {
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"const": "scripted"},
+        "id": {
+          "enum": ["aggressive-v1", "prudent-v1", "opportunist-v1"]
+        }
+      }
+    },
+    "controllers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["A", "B"],
+      "properties": {
+        "A": {"$ref": "#/$defs/controller"},
+        "B": {"$ref": "#/$defs/controller"}
+      }
+    }
+  }
+}

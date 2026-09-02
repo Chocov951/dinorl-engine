@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/replay-v1.schema.json",
+  "title": "DinoRL replay v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "replay_version",
+    "rules_version",
+    "action_version",
+    "observation_version",
+    "engine_version",
+    "map_id",
+    "seed",
+    "first_actor",
+    "controllers",
+    "events",
+    "result"
+  ],
+  "properties": {
+    "replay_version": {"const": "1.0.0"},
+    "rules_version": {"const": "1.0.0"},
+    "action_version": {"const": "1.0.0"},
+    "observation_version": {"const": "1.0.0"},
+    "engine_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "map_id": {"const": "arena_mvp_v1"},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 9223372036854775807},
+    "first_actor": {"$ref": "#/$defs/actor"},
+    "controllers": {"$ref": "#/$defs/controllers"},
+    "events": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 302,
+      "items": {"$ref": "#/$defs/event"}
+    },
+    "result": {"$ref": "#/$defs/replay_result"}
+  },
+  "$defs": {
+    "actor": {"enum": ["A", "B"]},
+    "nullable_actor": {
+      "oneOf": [
+        {"$ref": "#/$defs/actor"},
+        {"type": "null"}
+      ]
+    },
+    "coordinate": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {"type": "integer", "minimum": 0, "maximum": 8},
+        {"type": "integer", "minimum": 0, "maximum": 8}
+      ],
+      "items": false
+    },
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"const": "scripted"},
+        "id": {
+          "enum": ["aggressive-v1", "prudent-v1", "opportunist-v1"]
+        }
+      }
+    },
+    "controllers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["A", "B"],
+      "properties": {
+        "A": {"$ref": "#/$defs/controller"},
+        "B": {"$ref": "#/$defs/controller"}
+      }
+    },
+    "raptor_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position",
+        "hp",
+        "endurance",
+        "movement_points",
+        "carcass_score",
+        "main_action_available",
+        "voluntary_move_done",
+        "rest_pending",
+        "consumption_pending"
+      ],
+      "properties": {
+        "position": {"$ref": "#/$defs/coordinate"},
+        "hp": {"type": "integer", "minimum": 0, "maximum": 6},
+        "endurance": {"type": "integer", "minimum": 0, "maximum": 5},
+        "movement_points": {"type": "integer", "minimum": 0, "maximum": 3},
+        "carcass_score": {"type": "integer", "minimum": 0, "maximum": 3},
+        "main_action_available": {"type": "boolean"},
+        "voluntary_move_done": {"type": "boolean"},
+        "rest_pending": {"type": "boolean"},
+        "consumption_pending": {
+          "type": ["string", "null"],
+          "enum": ["carcass_left_a", "carcass_center", "carcass_left_b", null]
+        }
+      }
+    },
+    "lateral_carcass_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "pending_actor"],
+      "properties": {
+        "status": {"enum": ["available", "pending", "consumed"]},
+        "pending_actor": {"$ref": "#/$defs/nullable_actor"}
+      }
+    },
+    "central_carcass_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "pending_actor", "reactivate_on_turn"],
+      "properties": {
+        "status": {"enum": ["active", "pending", "recharging"]},
+        "pending_actor": {"$ref": "#/$defs/nullable_actor"},
+        "reactivate_on_turn": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 61
+        }
+      }
+    },
+    "carcass_states": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["carcass_left_a", "carcass_center", "carcass_left_b"],
+      "properties": {
+        "carcass_left_a": {"$ref": "#/$defs/lateral_carcass_state"},
+        "carcass_center": {"$ref": "#/$defs/central_carcass_state"},
+        "carcass_left_b": {"$ref": "#/$defs/lateral_carcass_state"}
+      }
+    },
+    "public_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_actor",
+        "turn",
+        "round",
+        "terminal",
+        "winner",
+        "end_reason",
+        "raptors",
+        "carcasses"
+      ],
+      "properties": {
+        "active_actor": {"$ref": "#/$defs/actor"},
+        "turn": {"type": "integer", "minimum": 0, "maximum": 59},
+        "round": {"type": "integer", "minimum": 1, "maximum": 30},
+        "terminal": {"type": "boolean"},
+        "winner": {
+          "type": ["string", "null"],
+          "enum": ["A", "B", "draw", null]
+        },
+        "end_reason": {
+          "type": ["string", "null"],
+          "enum": ["ko", "carcass_score", "round_limit", null]
+        },
+        "raptors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["A", "B"],
+          "properties": {
+            "A": {"$ref": "#/$defs/raptor_state"},
+            "B": {"$ref": "#/$defs/raptor_state"}
+          }
+        },
+        "carcasses": {"$ref": "#/$defs/carcass_states"}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "terminal": {"const": false},
+            "winner": {"type": "null"},
+            "end_reason": {"type": "null"}
+          }
+        },
+        {
+          "properties": {
+            "terminal": {"const": true},
+            "winner": {"enum": ["A", "B"]},
+            "end_reason": {"enum": ["ko", "carcass_score"]}
+          }
+        },
+        {
+          "properties": {
+            "terminal": {"const": true},
+            "winner": {"const": "draw"},
+            "end_reason": {"const": "round_limit"}
+          }
+        }
+      ]
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["movement", "endurance"],
+      "properties": {
+        "movement": {"type": "integer", "minimum": 0, "maximum": 2},
+        "endurance": {"type": "integer", "minimum": 0, "maximum": 2}
+      }
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "actor"],
+      "properties": {
+        "type": {
+          "enum": [
+            "actor_moved",
+            "target_shoved",
+            "damage_dealt",
+            "consumption_started",
+            "consumption_interrupted",
+            "carcass_point_awarded",
+            "carcass_consumed",
+            "central_recharge_started",
+            "central_reactivated",
+            "rest_started",
+            "endurance_restored",
+            "turn_ended"
+          ]
+        },
+        "actor": {"$ref": "#/$defs/actor"},
+        "target": {"$ref": "#/$defs/nullable_actor"},
+        "carcass_id": {
+          "type": ["string", "null"],
+          "enum": ["carcass_left_a", "carcass_center", "carcass_left_b", null]
+        },
+        "amount": {"type": "integer", "minimum": 0, "maximum": 6},
+        "from_position": {"$ref": "#/$defs/coordinate"},
+        "to_position": {"$ref": "#/$defs/coordinate"}
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seq", "type", "round", "turn", "actor", "action", "cost", "effects", "state"],
+      "properties": {
+        "seq": {"type": "integer", "minimum": 0, "maximum": 301},
+        "type": {"enum": ["match_started", "turn_started", "action_resolved", "match_ended"]},
+        "round": {"type": "integer", "minimum": 1, "maximum": 30},
+        "turn": {"type": "integer", "minimum": 0, "maximum": 59},
+        "actor": {"$ref": "#/$defs/actor"},
+        "action": {
+          "type": ["string", "null"],
+          "enum": [
+            "MOVE_NORTH",
+            "MOVE_EAST",
+            "MOVE_SOUTH",
+            "MOVE_WEST",
+            "BITE",
+            "SHOVE",
+            "FEED",
+            "REST",
+            "END_TURN",
+            null
+          ]
+        },
+        "cost": {"$ref": "#/$defs/cost"},
+        "effects": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/effect"}
+        },
+        "automatic_effects": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/effect"}
+        },
+        "state": {"$ref": "#/$defs/public_state"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"type": {"const": "action_resolved"}}},
+          "then": {"properties": {"action": {"type": "string"}}},
+          "else": {"properties": {"action": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"type": {"const": "turn_started"}}},
+          "then": {"required": ["automatic_effects"]},
+          "else": {"not": {"required": ["automatic_effects"]}}
+        }
+      ]
+    },
+    "replay_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["winner", "reason", "rounds_completed", "individual_turns"],
+      "properties": {
+        "winner": {"enum": ["A", "B", "draw"]},
+        "reason": {"enum": ["ko", "carcass_score", "round_limit"]},
+        "rounds_completed": {"type": "integer", "minimum": 0, "maximum": 30},
+        "individual_turns": {"type": "integer", "minimum": 1, "maximum": 60}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "winner": {"enum": ["A", "B"]},
+            "reason": {"enum": ["ko", "carcass_score"]}
+          }
+        },
+        {
+          "properties": {
+            "winner": {"const": "draw"},
+            "reason": {"const": "round_limit"}
+          }
+        }
+      ]
+    }
+  }
+}

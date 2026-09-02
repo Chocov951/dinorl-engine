@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/simulate-response-v1.schema.json",
+  "title": "DinoRL simulate response v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "request_id",
+    "engine_version",
+    "rules_version",
+    "map_id",
+    "replay_version",
+    "result",
+    "replay_sha256",
+    "replay"
+  ],
+  "properties": {
+    "protocol_version": {"const": "1.0.0"},
+    "request_id": {"type": "string", "format": "uuid"},
+    "engine_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "rules_version": {"const": "1.0.0"},
+    "map_id": {"const": "arena_mvp_v1"},
+    "replay_version": {"const": "1.0.0"},
+    "result": {"$ref": "#/$defs/result"},
+    "replay_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "replay": {
+      "oneOf": [
+        {"$ref": "https://schemas.dinorl.dev/v1/replay-v1.schema.json"},
+        {"type": "null"}
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "replay": {"$ref": "https://schemas.dinorl.dev/v1/replay-v1.schema.json"},
+        "replay_sha256": {"type": "string"}
+      }
+    },
+    {
+      "properties": {
+        "replay": {"type": "null"},
+        "replay_sha256": {"type": "null"}
+      }
+    }
+  ],
+  "$defs": {
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "winner",
+        "reason",
+        "score_a",
+        "score_b",
+        "hp_a",
+        "hp_b",
+        "rounds_completed",
+        "individual_turns",
+        "actions"
+      ],
+      "properties": {
+        "winner": {"enum": ["A", "B", "draw"]},
+        "reason": {"enum": ["ko", "carcass_score", "round_limit"]},
+        "score_a": {"type": "integer", "minimum": 0, "maximum": 3},
+        "score_b": {"type": "integer", "minimum": 0, "maximum": 3},
+        "hp_a": {"type": "integer", "minimum": 0, "maximum": 6},
+        "hp_b": {"type": "integer", "minimum": 0, "maximum": 6},
+        "rounds_completed": {"type": "integer", "minimum": 0, "maximum": 30},
+        "individual_turns": {"type": "integer", "minimum": 1, "maximum": 60},
+        "actions": {"type": "integer", "minimum": 1, "maximum": 240}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "winner": {"enum": ["A", "B"]},
+            "reason": {"enum": ["ko", "carcass_score"]}
+          }
+        },
+        {
+          "properties": {
+            "winner": {"const": "draw"},
+            "reason": {"const": "round_limit"}
+          }
+        }
+      ]
+    }
+  }
+}
