@@ -12,9 +12,16 @@ __all__ = [
     "ActionCost",
     "ActionTransition",
     "ActorMovedEffect",
+    "CarcassConsumedEffect",
+    "CarcassPointAwardedEffect",
+    "CentralReactivatedEffect",
+    "CentralRechargeStartedEffect",
+    "ConsumptionStartedEffect",
     "ConsumptionInterruptedEffect",
     "DamageDealtEffect",
+    "EnduranceRestoredEffect",
     "Effect",
+    "RestStartedEffect",
     "TargetShovedEffect",
     "TurnEndedEffect",
 ]
@@ -36,6 +43,54 @@ class ActorMovedEffect:
     from_position: Position
     to_position: Position
     type: Literal["actor_moved"] = field(default="actor_moved", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class ConsumptionStartedEffect:
+    """Start of an interruptible carcass consumption."""
+
+    actor: Actor
+    carcass_id: CarcassId
+    type: Literal["consumption_started"] = field(default="consumption_started", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class CarcassPointAwardedEffect:
+    """Delayed carcass point awarded at turn start."""
+
+    actor: Actor
+    carcass_id: CarcassId
+    amount: int
+    type: Literal["carcass_point_awarded"] = field(default="carcass_point_awarded", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class CarcassConsumedEffect:
+    """Permanent removal of a successfully consumed lateral carcass."""
+
+    actor: Actor
+    carcass_id: CarcassId
+    type: Literal["carcass_consumed"] = field(default="carcass_consumed", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class CentralRechargeStartedEffect:
+    """Start of the central carcass one-round cooldown."""
+
+    actor: Actor
+    carcass_id: CarcassId = "carcass_center"
+    type: Literal["central_recharge_started"] = field(
+        default="central_recharge_started", init=False
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class CentralReactivatedEffect:
+    """Reactivation of the central carcass at the scheduled turn."""
+
+    actor: Actor
+    carcass_id: CarcassId = "carcass_center"
+    type: Literal["central_reactivated"] = field(default="central_reactivated", init=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +125,23 @@ class TargetShovedEffect:
 
 
 @dataclass(frozen=True, slots=True)
+class RestStartedEffect:
+    """Declaration of a delayed endurance restoration."""
+
+    actor: Actor
+    type: Literal["rest_started"] = field(default="rest_started", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class EnduranceRestoredEffect:
+    """Endurance restored at the beginning of an actor's next turn."""
+
+    actor: Actor
+    amount: int
+    type: Literal["endurance_restored"] = field(default="endurance_restored", init=False)
+
+
+@dataclass(frozen=True, slots=True)
 class TurnEndedEffect:
     """Explicit closure of an actor's turn."""
 
@@ -79,9 +151,16 @@ class TurnEndedEffect:
 
 type Effect = (
     ActorMovedEffect
+    | ConsumptionStartedEffect
+    | CarcassPointAwardedEffect
+    | CarcassConsumedEffect
+    | CentralRechargeStartedEffect
+    | CentralReactivatedEffect
     | DamageDealtEffect
     | ConsumptionInterruptedEffect
     | TargetShovedEffect
+    | RestStartedEffect
+    | EnduranceRestoredEffect
     | TurnEndedEffect
 )
 
@@ -95,3 +174,4 @@ class ActionTransition:
     cost: ActionCost
     effects: tuple[Effect, ...]
     turn_ended: bool
+    automatic_effects: tuple[Effect, ...] = ()

@@ -1,6 +1,7 @@
 """Deterministic local environment for the pure DinoRL engine."""
 
 from random import Random
+from typing import cast
 
 from dinorl_engine.core.actions import Action
 from dinorl_engine.core.constants import (
@@ -17,13 +18,22 @@ from dinorl_engine.core.events import (
     ActionCost,
     ActionTransition,
     ActorMovedEffect,
+    CarcassConsumedEffect,
+    CarcassPointAwardedEffect,
+    CentralReactivatedEffect,
+    CentralRechargeStartedEffect,
     ConsumptionInterruptedEffect,
+    ConsumptionStartedEffect,
     DamageDealtEffect,
+    Effect,
+    EnduranceRestoredEffect,
+    RestStartedEffect,
     TargetShovedEffect,
     TurnEndedEffect,
 )
 from dinorl_engine.core.maps import ArenaMap, load_map
 from dinorl_engine.core.state import (
+    CarcassId,
     CentralCarcassState,
     GameState,
     LateralCarcassState,
@@ -152,6 +162,27 @@ class DinoRLEnv:
             and attacker.endurance >= 1
         )
 
+    def _rest_is_legal(self) -> bool:
+        actor = self.state.raptor(self.state.active_actor)
+        return actor.main_action_available and not actor.voluntary_move_done
+
+    def _carcass_at_active_actor(self) -> CarcassId | None:
+        position = self.state.raptor(self.state.active_actor).position
+        for carcass in self._arena.carcasses:
+            if carcass.position == position:
+                return cast(CarcassId, carcass.carcass_id)
+        return None
+
+    def _feed_is_legal(self) -> bool:
+        actor = self.state.raptor(self.state.active_actor)
+        carcass_id = self._carcass_at_active_actor()
+        if not actor.main_action_available or actor.endurance < 2 or carcass_id is None:
+            return False
+        if carcass_id == "carcass_center":
+            return self.state.central_carcass.status == "active"
+        lateral_index = 0 if carcass_id == "carcass_left_a" else 1
+        return self.state.lateral_carcasses[lateral_index].status == "available"
+
     def legal_actions(self) -> tuple[bool, ...]:
         """Return a fixed-size mask for the actions implemented at the current gate."""
 
@@ -162,10 +193,60 @@ class DinoRLEnv:
             legal[action] = self._movement_is_legal(action)
         legal[Action.BITE] = self._bite_is_legal()
         legal[Action.SHOVE] = self._shove_is_legal()
+        legal[Action.FEED] = self._feed_is_legal()
+        legal[Action.REST] = self._rest_is_legal()
         legal[Action.END_TURN] = True
         return tuple(legal)
 
-    def _end_turn(self) -> None:
+    def _start_turn(self) -> tuple[Effect, ...]:
+        actor = self.state.raptor(self.state.active_actor)
+        effects: list[Effect] = []
+        carcass_id = actor.consumption_pending
+        if carcass_id is not None:
+            actor.carcass_score += 1
+            actor.consumption_pending = None
+            if carcass_id == "carcass_center":
+                central = self.state.central_carcass
+                central.status = "recharging"
+                central.pending_actor = None
+                central.reactivate_on_turn = self.state.turn + 2
+            else:
+                lateral_index = 0 if carcass_id == "carcass_left_a" else 1
+                lateral = self.state.lateral_carcasses[lateral_index]
+                lateral.status = "consumed"
+                lateral.pending_actor = None
+            effects.append(
+                CarcassPointAwardedEffect(
+                    actor=self.state.active_actor,
+                    carcass_id=carcass_id,
+                    amount=1,
+                )
+            )
+            if carcass_id != "carcass_center":
+                effects.append(
+                    CarcassConsumedEffect(
+                        actor=self.state.active_actor,
+                        carcass_id=carcass_id,
+                    )
+                )
+            else:
+                effects.append(CentralRechargeStartedEffect(actor=self.state.active_actor))
+        if actor.rest_pending:
+            restored = 5 - actor.endurance
+            actor.endurance = 5
+            actor.rest_pending = False
+            effects.append(EnduranceRestoredEffect(actor=self.state.active_actor, amount=restored))
+        central = self.state.central_carcass
+        if central.status == "recharging" and central.reactivate_on_turn == self.state.turn:
+            central.status = "active"
+            central.reactivate_on_turn = None
+            effects.append(CentralReactivatedEffect(actor=self.state.active_actor))
+        actor.movement_points = 3
+        actor.main_action_available = True
+        actor.voluntary_move_done = False
+        return tuple(effects)
+
+    def _end_turn(self) -> tuple[Effect, ...]:
         state = self.state
         outgoing_actor = state.active_actor
         state.raptor(outgoing_actor).movement_points = 0
@@ -173,10 +254,7 @@ class DinoRLEnv:
             state.round += 1
         state.active_actor = Actor.B if outgoing_actor is Actor.A else Actor.A
         state.turn += 1
-        incoming_raptor = state.raptor(state.active_actor)
-        incoming_raptor.movement_points = 3
-        incoming_raptor.main_action_available = True
-        incoming_raptor.voluntary_move_done = False
+        return self._start_turn()
 
     def _interrupt_consumption(
         self, actor: Actor, target_actor: Actor
@@ -284,6 +362,51 @@ class DinoRLEnv:
             turn_ended=False,
         )
 
+    def _rest(self) -> ActionTransition:
+        actor = self.state.active_actor
+        self.state.claim_main_action()
+        self.state.raptor(actor).rest_pending = True
+        automatic_effects = self._end_turn()
+        return ActionTransition(
+            action=Action.REST,
+            actor=actor,
+            cost=ActionCost(movement=0, endurance=0),
+            effects=(RestStartedEffect(actor=actor), TurnEndedEffect(actor=actor)),
+            turn_ended=True,
+            automatic_effects=automatic_effects,
+        )
+
+    def _feed(self) -> ActionTransition:
+        actor_id = self.state.active_actor
+        actor = self.state.raptor(actor_id)
+        carcass_id = self._carcass_at_active_actor()
+        if carcass_id is None:
+            raise RuntimeError("legal FEED action has no carcass under active actor")
+        self.state.claim_main_action()
+        actor.endurance -= 2
+        actor.consumption_pending = carcass_id
+        if carcass_id == "carcass_center":
+            central = self.state.central_carcass
+            central.status = "pending"
+            central.pending_actor = actor_id
+        else:
+            lateral_index = 0 if carcass_id == "carcass_left_a" else 1
+            lateral = self.state.lateral_carcasses[lateral_index]
+            lateral.status = "pending"
+            lateral.pending_actor = actor_id
+        automatic_effects = self._end_turn()
+        return ActionTransition(
+            action=Action.FEED,
+            actor=actor_id,
+            cost=ActionCost(movement=0, endurance=2),
+            effects=(
+                ConsumptionStartedEffect(actor=actor_id, carcass_id=carcass_id),
+                TurnEndedEffect(actor=actor_id),
+            ),
+            turn_ended=True,
+            automatic_effects=automatic_effects,
+        )
+
     def step(self, action: Action) -> ActionTransition:
         """Apply one legal atomic action and return its immutable transition."""
 
@@ -292,13 +415,14 @@ class DinoRLEnv:
 
         actor_id = self.state.active_actor
         if action is Action.END_TURN:
-            self._end_turn()
+            automatic_effects = self._end_turn()
             return ActionTransition(
                 action=action,
                 actor=actor_id,
                 cost=ActionCost(movement=0, endurance=0),
                 effects=(TurnEndedEffect(actor=actor_id),),
                 turn_ended=True,
+                automatic_effects=automatic_effects,
             )
 
         if action is Action.BITE:
@@ -306,6 +430,12 @@ class DinoRLEnv:
 
         if action is Action.SHOVE:
             return self._shove()
+
+        if action is Action.FEED:
+            return self._feed()
+
+        if action is Action.REST:
+            return self._rest()
 
         actor = self.state.raptor(actor_id)
         previous_position = actor.position
