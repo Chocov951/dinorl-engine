@@ -1,0 +1,56 @@
+{
+  "map_id": "arena_mvp_v1",
+  "rows": 9,
+  "columns": 9,
+  "grid": [
+    "........S",
+    ".....M...",
+    "..M....BB",
+    "C.B.BM...",
+    "MM..C..MM",
+    "...MB.B.C",
+    "BB....M..",
+    "...M.....",
+    "S........"
+  ],
+  "spawns": {
+    "spawn_a": [8, 0],
+    "spawn_b": [0, 8]
+  },
+  "carcasses": {
+    "carcass_left_a": {
+      "kind": "lateral",
+      "position": [3, 0]
+    },
+    "carcass_center": {
+      "kind": "central",
+      "position": [4, 4]
+    },
+    "carcass_left_b": {
+      "kind": "lateral",
+      "position": [5, 8]
+    }
+  },
+  "walls": [
+    [1, 5],
+    [2, 2],
+    [3, 5],
+    [4, 0],
+    [4, 1],
+    [4, 7],
+    [4, 8],
+    [5, 3],
+    [6, 6],
+    [7, 3]
+  ],
+  "mud": [
+    [2, 7],
+    [2, 8],
+    [3, 2],
+    [3, 4],
+    [5, 4],
+    [5, 6],
+    [6, 0],
+    [6, 1]
+  ]
+}
