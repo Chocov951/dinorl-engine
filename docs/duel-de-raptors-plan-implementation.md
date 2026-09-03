@@ -1511,7 +1511,8 @@ Un lot ne commence que lorsque son gate d’entrée est satisfait.
 - **Dépendance :** ENG-041.
 - **Fichiers :** `tests/properties`.
 - **Test rouge :** au moins une propriété démontre son pouvoir de détection avec une mutation locale temporaire, puis la mutation est retirée.
-- **Acceptation :** toutes les propriétés de la section 28.3 sont couvertes et stables.
+- **Acceptation :** les seize propriétés de la section 28.3 applicables au noyau sans contrôleur ni replay sont couvertes et stables.
+- **Correction explicite du plan (2026-09-03) :** la propriété « même graine et mêmes contrôleurs donnent le même hash » est reportée à ENG-054, car les contrôleurs, le runner et le replay dépendent du Gate L4. Le Gate L4 peut être franchi sans anticiper L5.
 
 **Gate L4 :** moteur de règles complet, couverture `core` ≥ 95 %, Mypy strict et Ruff verts.
 
@@ -1550,7 +1551,7 @@ Un lot ne commence que lorsque son gate d’entrée est satisfait.
 - **Dépendance :** ENG-053.
 - **Fichiers :** fixture de match, test de hash.
 - **Test rouge :** hash attendu absent.
-- **Acceptation :** répétition exacte du replay ; modification de règle détectée.
+- **Acceptation :** deux exécutions avec les mêmes versions, carte, contrôleurs et graine produisent le même hash ; ce hash est conforme au hash doré ; une modification de règle est détectée.
 
 **Gate L5 :** le moteur produit un replay v1 déterministe validé par son schéma.
 

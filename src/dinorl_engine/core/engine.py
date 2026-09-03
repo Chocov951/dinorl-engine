@@ -1,7 +1,8 @@
 """Deterministic local environment for the pure DinoRL engine."""
 
+from dataclasses import dataclass
 from random import Random
-from typing import cast
+from typing import Literal, cast
 
 from dinorl_engine.core.actions import Action
 from dinorl_engine.core.constants import (
@@ -42,7 +43,7 @@ from dinorl_engine.core.state import (
     snapshot_public,
 )
 
-__all__ = ["DinoRLEnv"]
+__all__ = ["DinoRLEnv", "GameResult"]
 
 _MAX_SEED = (1 << 63) - 1
 _MOVEMENT_DELTAS: dict[Action, tuple[int, int]] = {
@@ -51,6 +52,21 @@ _MOVEMENT_DELTAS: dict[Action, tuple[int, int]] = {
     Action.MOVE_SOUTH: (1, 0),
     Action.MOVE_WEST: (0, -1),
 }
+
+
+@dataclass(frozen=True, slots=True)
+class GameResult:
+    """Stable typed summary exposed once a game reaches a terminal state."""
+
+    winner: Actor | Literal["draw"]
+    reason: EndReason
+    score_a: int
+    score_b: int
+    hp_a: int
+    hp_b: int
+    rounds_completed: int
+    individual_turns: int
+    actions: int
 
 
 class DinoRLEnv:
@@ -63,6 +79,7 @@ class DinoRLEnv:
         self.seed = seed
         self.replay = replay
         self._state: GameState | None = None
+        self._action_count = 0
 
     @property
     def state(self) -> GameState:
@@ -78,6 +95,28 @@ class DinoRLEnv:
 
         return self.state.terminal
 
+    @property
+    def result(self) -> GameResult:
+        """Return the immutable result of a terminal game."""
+
+        state = self.state
+        winner = state.winner
+        reason = state.end_reason
+        if not state.terminal or winner is None or reason is None:
+            raise RuntimeError("game is not terminal")
+        individual_turns = state.turn if reason is EndReason.CARCASS_SCORE else state.turn + 1
+        return GameResult(
+            winner=winner,
+            reason=reason,
+            score_a=state.raptor(Actor.A).carcass_score,
+            score_b=state.raptor(Actor.B).carcass_score,
+            hp_a=state.raptor(Actor.A).hp,
+            hp_b=state.raptor(Actor.B).hp,
+            rounds_completed=individual_turns // 2,
+            individual_turns=individual_turns,
+            actions=self._action_count,
+        )
+
     def reset(self, first_actor: Actor | None = None) -> GameState:
         """Create and return a fresh initial state."""
 
@@ -92,6 +131,7 @@ class DinoRLEnv:
             RaptorState(position=self._arena.spawn_b),
         )
         raptors[selected_actor].movement_points = 3
+        self._action_count = 0
         self._state = GameState(
             engine_version=ENGINE_VERSION,
             rules_version=RULES_VERSION,
@@ -231,6 +271,11 @@ class DinoRLEnv:
                 )
             else:
                 effects.append(CentralRechargeStartedEffect(actor=self.state.active_actor))
+            if actor.carcass_score >= 3:
+                self.state.terminal = True
+                self.state.winner = self.state.active_actor
+                self.state.end_reason = EndReason.CARCASS_SCORE
+                return tuple(effects)
         if actor.rest_pending:
             restored = 5 - actor.endurance
             actor.endurance = 5
@@ -250,6 +295,11 @@ class DinoRLEnv:
         state = self.state
         outgoing_actor = state.active_actor
         state.raptor(outgoing_actor).movement_points = 0
+        if outgoing_actor is not state.first_actor and state.round == 30:
+            state.terminal = True
+            state.winner = "draw"
+            state.end_reason = EndReason.ROUND_LIMIT
+            return ()
         if outgoing_actor is not state.first_actor:
             state.round += 1
         state.active_actor = Actor.B if outgoing_actor is Actor.A else Actor.A
@@ -416,26 +466,28 @@ class DinoRLEnv:
         actor_id = self.state.active_actor
         if action is Action.END_TURN:
             automatic_effects = self._end_turn()
-            return ActionTransition(
-                action=action,
-                actor=actor_id,
-                cost=ActionCost(movement=0, endurance=0),
-                effects=(TurnEndedEffect(actor=actor_id),),
-                turn_ended=True,
-                automatic_effects=automatic_effects,
+            return self._record_transition(
+                ActionTransition(
+                    action=action,
+                    actor=actor_id,
+                    cost=ActionCost(movement=0, endurance=0),
+                    effects=(TurnEndedEffect(actor=actor_id),),
+                    turn_ended=True,
+                    automatic_effects=automatic_effects,
+                )
             )
 
         if action is Action.BITE:
-            return self._bite()
+            return self._record_transition(self._bite())
 
         if action is Action.SHOVE:
-            return self._shove()
+            return self._record_transition(self._shove())
 
         if action is Action.FEED:
-            return self._feed()
+            return self._record_transition(self._feed())
 
         if action is Action.REST:
-            return self._rest()
+            return self._record_transition(self._rest())
 
         actor = self.state.raptor(actor_id)
         previous_position = actor.position
@@ -443,16 +495,22 @@ class DinoRLEnv:
         actor.position = self._movement_destination(action)
         actor.movement_points -= movement_cost
         actor.voluntary_move_done = True
-        return ActionTransition(
-            action=action,
-            actor=actor_id,
-            cost=ActionCost(movement=movement_cost, endurance=0),
-            effects=(
-                ActorMovedEffect(
-                    actor=actor_id,
-                    from_position=previous_position,
-                    to_position=actor.position,
+        return self._record_transition(
+            ActionTransition(
+                action=action,
+                actor=actor_id,
+                cost=ActionCost(movement=movement_cost, endurance=0),
+                effects=(
+                    ActorMovedEffect(
+                        actor=actor_id,
+                        from_position=previous_position,
+                        to_position=actor.position,
+                    ),
                 ),
-            ),
-            turn_ended=False,
+                turn_ended=False,
+            )
         )
+
+    def _record_transition(self, transition: ActionTransition) -> ActionTransition:
+        self._action_count += 1
+        return transition

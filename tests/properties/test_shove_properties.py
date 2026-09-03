@@ -17,11 +17,13 @@ _DIRECTIONS: tuple[Position, ...] = ((-1, 0), (0, 1), (1, 0), (0, -1))
     attacker_row=st.integers(min_value=0, max_value=8),
     attacker_column=st.integers(min_value=0, max_value=8),
     direction=st.sampled_from(_DIRECTIONS),
+    target_hp=st.integers(min_value=1, max_value=6),
 )
 def test_legal_shove_preserves_position_and_resource_invariants(
     attacker_row: int,
     attacker_column: int,
     direction: Position,
+    target_hp: int,
 ) -> None:
     arena = load_map(MAP_ID)
     attacker_position = (attacker_row, attacker_column)
@@ -38,6 +40,7 @@ def test_legal_shove_preserves_position_and_resource_invariants(
     target = env.state.raptor(Actor.B)
     attacker.position = attacker_position
     target.position = target_position
+    target.hp = target_hp
 
     env.step(Action.SHOVE)
 
@@ -45,7 +48,7 @@ def test_legal_shove_preserves_position_and_resource_invariants(
     assert 0 <= target.position[1] < arena.columns
     assert target.position not in arena.walls
     assert target.position != attacker.position
-    assert target.hp in {5, 6}
+    assert target_hp - target.hp in {0, 1}
     assert target.movement_points == 0
     assert target.voluntary_move_done is False
     assert attacker.movement_points == 2
