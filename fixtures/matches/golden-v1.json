@@ -1,0 +1,9 @@
+{
+  "map_id": "arena_mvp_v1",
+  "seed": 42,
+  "controllers": {
+    "A": "aggressive-v1",
+    "B": "prudent-v1"
+  },
+  "replay_sha256": "73663168e8f38e11db64a455fb3f88e6d919b4ae99cfbc9712661cfad9d1b470"
+}
