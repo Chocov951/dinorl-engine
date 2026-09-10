@@ -1,0 +1,165 @@
+{
+  "benchmark": "dinorl-match-baseline",
+  "environment": {
+    "cpu": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "engine_version": "0.1.0",
+    "logical_cpu_count": 14,
+    "machine": "AMD64",
+    "process_start_method": "spawn",
+    "python_implementation": "CPython",
+    "python_version": "3.12.13",
+    "rules_version": "1.0.0",
+    "system": "Windows-11-10.0.26200-SP0"
+  },
+  "generated_at": "2026-09-10T11:25:31.128942+00:00",
+  "measurements": [
+    {
+      "actions_per_second": 22116.81162932767,
+      "elapsed_seconds": 2.524098000001686,
+      "matches_per_second": 356.5630177589772,
+      "mean_match_seconds": 0.002360756888944403,
+      "measured_actions": 55825,
+      "measured_matches": 900,
+      "observed_worker_processes": 1,
+      "p95_match_seconds": 0.00490180000088003,
+      "peak_memory_bytes_per_process": 42491904,
+      "processes": 1,
+      "repetition_seconds": [
+        0.4856020000006538,
+        0.5233891999996558,
+        0.48552440000094066,
+        0.50407339999947,
+        0.5255090000009659
+      ],
+      "speedup": 1.0
+    },
+    {
+      "actions_per_second": 41730.1027767198,
+      "elapsed_seconds": 1.337763300001825,
+      "matches_per_second": 672.764755916665,
+      "mean_match_seconds": 0.0023386263333425934,
+      "measured_actions": 55825,
+      "measured_matches": 900,
+      "observed_worker_processes": 2,
+      "p95_match_seconds": 0.004940300001180731,
+      "peak_memory_bytes_per_process": 38539264,
+      "processes": 2,
+      "repetition_seconds": [
+        0.2789615000001504,
+        0.26150310000048194,
+        0.2669924000001629,
+        0.26697629999944184,
+        0.2633300000015879
+      ],
+      "speedup": 1.8868046387565294
+    },
+    {
+      "actions_per_second": 63686.67411262673,
+      "elapsed_seconds": 0.8765569999977743,
+      "matches_per_second": 1026.7444102349136,
+      "mean_match_seconds": 0.0028869154444631324,
+      "measured_actions": 55825,
+      "measured_matches": 900,
+      "observed_worker_processes": 4,
+      "p95_match_seconds": 0.006628200000704965,
+      "peak_memory_bytes_per_process": 35631104,
+      "processes": 4,
+      "repetition_seconds": [
+        0.17564909999964584,
+        0.1775880999994115,
+        0.1750497999983054,
+        0.16869769999902928,
+        0.17957230000138225
+      ],
+      "speedup": 2.879559458207618
+    },
+    {
+      "actions_per_second": 92070.76510348129,
+      "elapsed_seconds": 0.6063271000002715,
+      "matches_per_second": 1484.3473102218209,
+      "mean_match_seconds": 0.0035460753333285944,
+      "measured_actions": 55825,
+      "measured_matches": 900,
+      "observed_worker_processes": 8,
+      "p95_match_seconds": 0.008213499999328633,
+      "peak_memory_bytes_per_process": 34983936,
+      "processes": 8,
+      "repetition_seconds": [
+        0.12201319999985571,
+        0.11975340000026335,
+        0.11658139999963169,
+        0.11877610000010463,
+        0.12920300000041607
+      ],
+      "speedup": 4.1629311967097555
+    }
+  ],
+  "schema_version": "1.0.0",
+  "workload": {
+    "controller_pairs": [
+      [
+        "aggressive-v1",
+        "aggressive-v1"
+      ],
+      [
+        "aggressive-v1",
+        "prudent-v1"
+      ],
+      [
+        "aggressive-v1",
+        "opportunist-v1"
+      ],
+      [
+        "prudent-v1",
+        "aggressive-v1"
+      ],
+      [
+        "prudent-v1",
+        "prudent-v1"
+      ],
+      [
+        "prudent-v1",
+        "opportunist-v1"
+      ],
+      [
+        "opportunist-v1",
+        "aggressive-v1"
+      ],
+      [
+        "opportunist-v1",
+        "prudent-v1"
+      ],
+      [
+        "opportunist-v1",
+        "opportunist-v1"
+      ]
+    ],
+    "include_replay": false,
+    "map_id": "arena_mvp_v1",
+    "matches_per_repetition": 180,
+    "measured_repetitions": 5,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "warmup_repetitions": 1
+  }
+}
