@@ -5,8 +5,10 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
-from typing import Final
+from dataclasses import dataclass
+from typing import Final, Literal
 
+from dinorl_engine.controllers.protocol import is_opaque_controller_id
 from dinorl_engine.core.constants import Actor
 from dinorl_engine.core.engine import GameResult
 from dinorl_engine.core.events import (
@@ -27,7 +29,12 @@ from dinorl_engine.core.events import (
 )
 from dinorl_engine.core.state import GameState, snapshot_public
 
-__all__ = ["ReplayRecorder", "canonical_replay_json", "replay_sha256"]
+__all__ = [
+    "ReplayControllerDescriptor",
+    "ReplayRecorder",
+    "canonical_replay_json",
+    "replay_sha256",
+]
 
 type JsonScalar = str | int | float | bool | None
 type JsonValue = JsonScalar | list[JsonValue] | dict[str, JsonValue]
@@ -35,6 +42,33 @@ type JsonObject = dict[str, JsonValue]
 
 _CONTROLLER_IDS: Final = frozenset({"aggressive-v1", "prudent-v1", "opportunist-v1"})
 _ZERO_COST: Final[JsonObject] = {"movement": 0, "endurance": 0}
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayControllerDescriptor:
+    """Closed, path-free controller provenance stored in replay v1."""
+
+    kind: Literal["scripted", "manual", "sequence"]
+    id: str
+
+    def __post_init__(self) -> None:
+        if self.kind not in {"scripted", "manual", "sequence"}:
+            raise ValueError("unknown replay controller kind")
+        if self.kind == "scripted" and self.id not in _CONTROLLER_IDS:
+            raise ValueError("unknown scripted controller id")
+        if self.kind == "manual" and self.id != "manual":
+            raise ValueError("manual replay controller id must be 'manual'")
+        if self.kind == "sequence" and not is_opaque_controller_id(self.id):
+            raise ValueError("sequence controller id must be opaque and path-free")
+
+
+def _controller_json(controller: str | ReplayControllerDescriptor) -> JsonObject:
+    descriptor = (
+        ReplayControllerDescriptor("scripted", controller)
+        if isinstance(controller, str)
+        else controller
+    )
+    return {"kind": descriptor.kind, "id": descriptor.id}
 
 
 def _json_value(value: object) -> JsonValue:
@@ -119,13 +153,11 @@ class ReplayRecorder:
         self,
         state: GameState,
         *,
-        controller_a: str,
-        controller_b: str,
+        controller_a: str | ReplayControllerDescriptor,
+        controller_b: str | ReplayControllerDescriptor,
     ) -> None:
         if state.terminal:
             raise ValueError("cannot start a replay from a terminal state")
-        if controller_a not in _CONTROLLER_IDS or controller_b not in _CONTROLLER_IDS:
-            raise ValueError("unknown scripted controller id")
         self._header: JsonObject = {
             "replay_version": state.replay_version,
             "rules_version": state.rules_version,
@@ -136,8 +168,8 @@ class ReplayRecorder:
             "seed": state.seed,
             "first_actor": state.first_actor.name,
             "controllers": {
-                "A": {"kind": "scripted", "id": controller_a},
-                "B": {"kind": "scripted", "id": controller_b},
+                "A": _controller_json(controller_a),
+                "B": _controller_json(controller_b),
             },
         }
         self._events: list[JsonObject] = []

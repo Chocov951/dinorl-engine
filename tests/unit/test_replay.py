@@ -2,14 +2,16 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from dinorl_engine.core.actions import Action
 from dinorl_engine.core.constants import Actor
 from dinorl_engine.core.engine import DinoRLEnv
 from dinorl_engine.match.replay import (
+    ReplayControllerDescriptor,
     ReplayRecorder,
     canonical_replay_json,
     replay_sha256,
@@ -94,3 +96,21 @@ def test_replay_result_contains_only_the_public_contract_fields() -> None:
         "rounds_completed": 1,
         "individual_turns": 3,
     }
+
+
+@pytest.mark.parametrize(
+    ("kind", "controller_id"),
+    [
+        ("scripted", "unknown-v1"),
+        ("manual", "operator-name"),
+        ("sequence", "../plan"),
+        ("sequence", "plan\\actions"),
+        ("sequence", "sequence:plan"),
+        ("unknown", "opaque-id"),
+    ],
+)
+def test_replay_controller_descriptors_are_closed_and_path_free(
+    kind: str, controller_id: str
+) -> None:
+    with pytest.raises(ValueError):
+        ReplayControllerDescriptor(cast(Any, kind), controller_id)

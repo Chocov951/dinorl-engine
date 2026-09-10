@@ -11,12 +11,18 @@ from dinorl_engine.controllers.scripted import create_scripted_controller
 from dinorl_engine.core.constants import Actor
 from dinorl_engine.core.engine import DinoRLEnv, GameResult
 from dinorl_engine.match.replay import (
+    ReplayControllerDescriptor,
     ReplayRecorder,
     canonical_replay_json,
     replay_sha256,
 )
 
-__all__ = ["MatchExecutionError", "MatchOutcome", "run_match"]
+__all__ = [
+    "MatchExecutionError",
+    "MatchOutcome",
+    "run_controller_match",
+    "run_match",
+]
 
 MAX_ACTIONS_PER_TURN: Final = 4
 MAX_MATCH_ACTIONS: Final = 240
@@ -68,17 +74,40 @@ def run_match(
     controller_b_id: str,
     include_replay: bool,
 ) -> MatchOutcome:
-    """Run one match to a rules terminal state under strict defensive bounds."""
+    """Resolve two built-in IDs and run a deterministic scripted match."""
 
     controller_a = create_scripted_controller(controller_a_id)
     controller_b = create_scripted_controller(controller_b_id)
+    return run_controller_match(
+        map_id=map_id,
+        seed=seed,
+        controller_a=controller_a,
+        controller_b=controller_b,
+        controller_a_descriptor=ReplayControllerDescriptor("scripted", controller_a_id),
+        controller_b_descriptor=ReplayControllerDescriptor("scripted", controller_b_id),
+        include_replay=include_replay,
+    )
+
+
+def run_controller_match(
+    *,
+    map_id: str,
+    seed: int,
+    controller_a: Controller,
+    controller_b: Controller,
+    controller_a_descriptor: ReplayControllerDescriptor,
+    controller_b_descriptor: ReplayControllerDescriptor,
+    include_replay: bool,
+) -> MatchOutcome:
+    """Run injected controllers to a rules terminal state under defensive bounds."""
+
     env = DinoRLEnv(map_id=map_id, seed=seed, replay=include_replay)
     state = env.reset()
     recorder = (
         ReplayRecorder(
             state,
-            controller_a=controller_a_id,
-            controller_b=controller_b_id,
+            controller_a=controller_a_descriptor,
+            controller_b=controller_b_descriptor,
         )
         if include_replay
         else None

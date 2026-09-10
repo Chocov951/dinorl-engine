@@ -54,15 +54,40 @@
       "items": false
     },
     "controller": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind", "id"],
-      "properties": {
-        "kind": {"const": "scripted"},
-        "id": {
-          "enum": ["aggressive-v1", "prudent-v1", "opportunist-v1"]
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": {"const": "scripted"},
+            "id": {
+              "enum": ["aggressive-v1", "prudent-v1", "opportunist-v1"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": {"const": "manual"},
+            "id": {"const": "manual"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": {"const": "sequence"},
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+            }
+          }
         }
-      }
+      ]
     },
     "controllers": {
       "type": "object",

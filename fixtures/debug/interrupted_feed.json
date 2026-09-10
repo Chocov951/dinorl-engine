@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "controller_id": "interrupted-feed-a",
+  "turns": [
+    {"actions": ["MOVE_NORTH", "MOVE_NORTH", "END_TURN"]},
+    {"actions": ["MOVE_EAST", "BITE", "END_TURN"]},
+    {"actions": ["MOVE_SOUTH", "FEED"]}
+  ]
+}

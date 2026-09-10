@@ -151,3 +151,35 @@ def test_invalid_replays_and_public_states_are_rejected(
     replay = copy.deepcopy(_read_json(FIXTURE_DIRECTORY / "replay-v1.valid.json"))
     mutation(replay)
     _assert_invalid(validators["replay-v1.schema.json"], replay)
+
+
+def test_replay_accepts_closed_local_debug_descriptors_without_paths(
+    validators: dict[str, Draft202012Validator],
+) -> None:
+    replay = _read_json(FIXTURE_DIRECTORY / "replay-v1.valid.json")
+    replay["controllers"] = {
+        "A": {"kind": "manual", "id": "manual"},
+        "B": {"kind": "sequence", "id": "interrupted-feed-a"},
+    }
+    _assert_valid(validators["replay-v1.schema.json"], replay)
+
+    for invalid_id in ("../plan", "C:\\plan", "sequence:plan", "plan/name"):
+        replay["controllers"]["B"]["id"] = invalid_id
+        _assert_invalid(validators["replay-v1.schema.json"], replay)
+
+
+@pytest.mark.parametrize(
+    "descriptor",
+    [
+        {"kind": "manual", "id": "manual"},
+        {"kind": "sequence", "id": "interrupted-feed-a"},
+        {"kind": "sequence", "id": "fixtures/debug/plan.json"},
+    ],
+)
+def test_simulation_request_keeps_debug_controllers_and_paths_outside_http(
+    validators: dict[str, Draft202012Validator], descriptor: JsonObject
+) -> None:
+    request = _read_json(FIXTURE_DIRECTORY / "simulate-request-v1.valid.json")
+    request["controllers"]["A"] = descriptor
+
+    _assert_invalid(validators["simulate-request-v1.schema.json"], request)

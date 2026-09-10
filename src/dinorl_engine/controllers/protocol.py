@@ -1,17 +1,32 @@
 """Minimal replaceable controller protocol for local matches."""
 
-from typing import Protocol, runtime_checkable
+import re
+from typing import Protocol, TypeGuard, runtime_checkable
 
 from dinorl_engine.core.actions import Action
 from dinorl_engine.core.engine import DinoRLEnv
 from dinorl_engine.core.events import ActionTransition
 from dinorl_engine.core.state import PublicSnapshot
 
-__all__ = ["Controller", "ControllerDecisionError", "step_with_controller"]
+__all__ = [
+    "OPAQUE_CONTROLLER_ID_PATTERN",
+    "Controller",
+    "ControllerDecisionError",
+    "is_opaque_controller_id",
+    "step_with_controller",
+]
+
+OPAQUE_CONTROLLER_ID_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
 
 
 class ControllerDecisionError(ValueError):
     """A controller returned a value outside the versioned action enum."""
+
+
+def is_opaque_controller_id(value: object) -> TypeGuard[str]:
+    """Accept a bounded opaque identifier while excluding path-like syntax."""
+
+    return isinstance(value, str) and re.fullmatch(OPAQUE_CONTROLLER_ID_PATTERN, value) is not None
 
 
 @runtime_checkable
