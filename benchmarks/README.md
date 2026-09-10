@@ -15,6 +15,15 @@ Run the required process matrix with:
   --output benchmarks\results\baseline-2026-09-10.json
 ```
 
+```bash
+/home/DinoRL/.virtualenvs/dinorl-engine-0.1.0/bin/python -m benchmarks.benchmark_matches \
+  --processes 1 2 4 8 \
+  --repetitions 5 \
+  --warmup-repetitions 1 \
+  --seed-count 20 \
+  --output benchmarks/results/baseline-2026-09-10.json
+```
+
 The JSON report records matches and actions per second, mean and p95 match
 duration, speedup relative to one process, maximum peak resident memory among
 the participating processes, repetition timings, and the Python/CPU/system
@@ -42,6 +51,14 @@ Run the archived measurement with:
   --warmup-repetitions 1 `
   --seed-count 20 `
   --output benchmarks\results\replay-cost-2026-09-10.json
+```
+
+```bash
+/home/DinoRL/.virtualenvs/dinorl-engine-0.1.0/bin/python -m benchmarks.benchmark_replay \
+  --repetitions 5 \
+  --warmup-repetitions 1 \
+  --seed-count 20 \
+  --output benchmarks/results/replay-cost-2026-09-10.json
 ```
 
 The command refuses fewer than five measured repetitions or an absent warm-up,

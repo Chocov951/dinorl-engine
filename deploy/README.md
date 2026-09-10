@@ -2,7 +2,7 @@
 
 Cette procédure déploie le service Flask en WSGI avec Python 3.12, sans Docker
 et sans dépendance à MyBlog. Les commandes sont exécutées dans une console Bash
-PythonAnywhere. Remplacer `<user>` et `<domain>` par les valeurs du compte.
+PythonAnywhere. Remplacer `DinoRL` et `DinoRL.eu.pythonanywhere.com` par les valeurs du compte.
 
 ## Configuration requise
 
@@ -18,15 +18,15 @@ public. HTTPS doit être activé pour le domaine de production.
 ## Installation reproductible
 
 Transférer la révision validée dans un répertoire versionné, par exemple
-`/home/<user>/releases/dinorl-engine-0.1.0`, puis vérifier l'interpréteur :
+`/home/DinoRL/releases/dinorl-engine-0.1.0`, puis vérifier l'interpréteur :
 
 ```bash
-cd /home/<user>/releases/dinorl-engine-0.1.0
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
 python3.12 --version
-python3.12 -m venv /home/<user>/.virtualenvs/dinorl-engine-0.1.0
-/home/<user>/.virtualenvs/dinorl-engine-0.1.0/bin/python -m pip install \
+python3.12 -m venv /home/DinoRL/.virtualenvs/dinorl-engine-0.1.0
+/home/DinoRL/.virtualenvs/dinorl-engine-0.1.0/bin/python -m pip install \
   -r requirements.lock
-/home/<user>/.virtualenvs/dinorl-engine-0.1.0/bin/python -m pip install --no-deps -e .
+/home/DinoRL/.virtualenvs/dinorl-engine-0.1.0/bin/python -m pip install --no-deps -e .
 ```
 
 L'installation éditable est volontaire : `schemas/*.json` reste l'unique source
@@ -37,9 +37,9 @@ Créer les secrets hors du dépôt avec des permissions privées :
 
 ```bash
 umask 077
-mkdir -p /home/<user>/.config
+mkdir -p /home/DinoRL/.config
 python3.12 -c "import secrets; print(secrets.token_urlsafe(48))" \
-  > /home/<user>/.config/dinorl-engine-token
+  > /home/DinoRL/.config/dinorl-engine-token
 ```
 
 Le fichier facultatif `dinorl-engine-previous-token` utilise les mêmes
@@ -57,10 +57,10 @@ import os
 import sys
 from pathlib import Path
 
-project_home = Path("/home/<user>/releases/dinorl-engine-0.1.0")
+project_home = Path("/home/DinoRL/releases/dinorl-engine-0.1.0")
 sys.path.insert(0, str(project_home))
 
-secret_home = Path("/home/<user>/.config")
+secret_home = Path("/home/DinoRL/.config")
 os.environ["DINORL_ENGINE_TOKEN"] = (
     (secret_home / "dinorl-engine-token").read_text(encoding="utf-8").strip()
 )
@@ -82,8 +82,8 @@ route. Recharger ensuite l'application depuis l'onglet **Web**.
 Charger le jeton dans la console sans l'afficher :
 
 ```bash
-export DINORL_ENGINE_TOKEN="$(cat /home/<user>/.config/dinorl-engine-token)"
-export DINORL_ENGINE_URL="https://<domain>"
+export DINORL_ENGINE_TOKEN="$(cat /home/DinoRL/.config/dinorl-engine-token)"
+export DINORL_ENGINE_URL="https://DinoRL.eu.pythonanywhere.com"
 ```
 
 Vérifier d'abord `GET /health` et l'échec fermé sans authentification :
@@ -183,7 +183,7 @@ apparaître.
 ## Rotation du jeton
 
 1. Copier temporairement le jeton courant vers
-   `/home/<user>/.config/dinorl-engine-previous-token`.
+   `/home/DinoRL/.config/dinorl-engine-previous-token`.
 2. Générer un nouveau `dinorl-engine-token` avec la commande sécurisée ci-dessus.
 3. Recharger l'application, configurer MyBlog avec le nouveau jeton et exécuter
    les smoke tests.
