@@ -1,0 +1,138 @@
+{
+  "benchmark": "dinorl-replay-cost",
+  "comparison": {
+    "slowdown_percent": 78.67289243557701,
+    "throughput_ratio_with_over_without": 0.2132710756442299
+  },
+  "environment": {
+    "cpu": "x86_64",
+    "engine_version": "0.1.0",
+    "logical_cpu_count": 4,
+    "machine": "x86_64",
+    "process_start_method": "fork",
+    "python_implementation": "CPython",
+    "python_version": "3.12.8",
+    "rules_version": "1.0.0",
+    "system": "Linux-6.8.0-1061-aws-x86_64-with-glibc2.35"
+  },
+  "generated_at": "2026-09-10T14:07:39.262881+00:00",
+  "limits": {
+    "all_samples_compliant": true,
+    "replay_max_bytes": 491520,
+    "response_max_bytes": 524288
+  },
+  "measurements": [
+    {
+      "actions_per_second": 13544.051705310358,
+      "elapsed_seconds": 4.121735593944322,
+      "include_replay": false,
+      "matches_per_second": 218.35461773003712,
+      "mean_match_seconds": 0.004578900793049899,
+      "measured_actions": 55825,
+      "measured_matches": 900,
+      "p95_match_seconds": 0.009030354995047674,
+      "repetition_seconds": [
+        0.7937280729820486,
+        0.7874342869909015,
+        0.7723774859914556,
+        0.8304859059862792,
+        0.9377098419936374
+      ]
+    },
+    {
+      "actions_per_second": 2888.5544757726066,
+      "elapsed_seconds": 19.326275640021777,
+      "include_replay": true,
+      "matches_per_second": 46.56872419516965,
+      "mean_match_seconds": 0.021472658153959653,
+      "measured_actions": 55825,
+      "measured_matches": 900,
+      "p95_match_seconds": 0.03494161201524548,
+      "repetition_seconds": [
+        4.318979478004621,
+        3.7424800980079453,
+        3.6992515180027112,
+        3.706167769007152,
+        3.859396776999347
+      ],
+      "replay_size_bytes": {
+        "max": 136056,
+        "p50": 63960,
+        "p95": 135523
+      },
+      "response_size_bytes": {
+        "max": 136476,
+        "p50": 64367,
+        "p95": 135943
+      }
+    }
+  ],
+  "schema_version": "1.0.0",
+  "workload": {
+    "controller_pairs": [
+      [
+        "aggressive-v1",
+        "aggressive-v1"
+      ],
+      [
+        "aggressive-v1",
+        "prudent-v1"
+      ],
+      [
+        "aggressive-v1",
+        "opportunist-v1"
+      ],
+      [
+        "prudent-v1",
+        "aggressive-v1"
+      ],
+      [
+        "prudent-v1",
+        "prudent-v1"
+      ],
+      [
+        "prudent-v1",
+        "opportunist-v1"
+      ],
+      [
+        "opportunist-v1",
+        "aggressive-v1"
+      ],
+      [
+        "opportunist-v1",
+        "prudent-v1"
+      ],
+      [
+        "opportunist-v1",
+        "opportunist-v1"
+      ]
+    ],
+    "map_id": "arena_mvp_v1",
+    "matches_per_repetition": 180,
+    "measured_repetitions": 5,
+    "processes": 1,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "warmup_repetitions": 1
+  }
+}
