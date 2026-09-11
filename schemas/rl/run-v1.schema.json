@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/run-v1.schema.json",
+  "title": "DinoRL training run v1",
+  "description": "Strict request and current state for one training execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "experiment_id", "budget_units", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "run_id": {"$ref": "#/$defs/opaque_id"},
+    "experiment_id": {"$ref": "#/$defs/opaque_id"},
+    "budget_units": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["queued", "compiling", "running", "evaluating", "completed", "failed", "cancelled"]}
+  },
+  "$defs": {
+    "opaque_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"}
+  }
+}

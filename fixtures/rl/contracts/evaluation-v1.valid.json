@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "evaluation-01",
+  "checkpoint_id": "checkpoint-01",
+  "suite": "deterministic",
+  "status": "pending"
+}

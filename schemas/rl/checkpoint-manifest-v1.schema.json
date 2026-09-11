@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/checkpoint-manifest-v1.schema.json",
+  "title": "DinoRL trusted training checkpoint manifest v1",
+  "description": "Metadata for an internal checkpoint; checkpoint payloads are never user uploads.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "checkpoint_version", "checkpoint_id", "experiment_id", "architecture_id", "reward", "contracts", "files", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "checkpoint_version": {"const": "training-checkpoint-v1"},
+    "checkpoint_id": {"$ref": "#/$defs/opaque_id"},
+    "experiment_id": {"$ref": "#/$defs/opaque_id"},
+    "architecture_id": {"enum": ["mlp-v1", "small-cnn-v1"]},
+    "reward": {"$ref": "#/$defs/reward"},
+    "contracts": {"$ref": "#/$defs/contracts"},
+    "files": {"$ref": "#/$defs/files"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "opaque_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "reward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dsl_version", "catalog_version", "source_sha256"],
+      "properties": {
+        "dsl_version": {"const": "reward-dsl-v1"},
+        "catalog_version": {"const": "reward-catalog-v1"},
+        "source_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine_version", "rules_version", "map_id", "action_version", "observation_version"],
+      "properties": {
+        "engine_version": {"const": "0.1.0"},
+        "rules_version": {"const": "1.0.0"},
+        "map_id": {"const": "arena_mvp_v1"},
+        "action_version": {"const": "1.0.0"},
+        "observation_version": {"const": "rl-observation-v1"}
+      }
+    },
+    "files": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"},
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    }
+  }
+}

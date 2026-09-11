@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/snapshot-manifest-v1.schema.json",
+  "title": "DinoRL published policy snapshot manifest v1",
+  "description": "Metadata for an immutable safetensors-only policy snapshot.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "snapshot_version", "snapshot_id", "owner_id", "source_checkpoint_id", "parent_snapshot_id", "architecture_id", "contracts", "torch_version", "exporter_version", "publication_status", "evaluation_id", "files", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "snapshot_version": {"const": "policy-snapshot-v1"},
+    "snapshot_id": {"$ref": "#/$defs/opaque_id"},
+    "owner_id": {"$ref": "#/$defs/opaque_id"},
+    "source_checkpoint_id": {"$ref": "#/$defs/opaque_id"},
+    "parent_snapshot_id": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/opaque_id"}]},
+    "architecture_id": {"enum": ["mlp-v1", "small-cnn-v1"]},
+    "contracts": {"$ref": "#/$defs/contracts"},
+    "torch_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[A-Za-z0-9.+-]*)?$"},
+    "exporter_version": {"type": "string", "minLength": 1, "maxLength": 128},
+    "publication_status": {"const": "published"},
+    "evaluation_id": {"$ref": "#/$defs/opaque_id"},
+    "files": {"$ref": "#/$defs/files"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "opaque_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine_version", "rules_version", "map_id", "action_version", "observation_version"],
+      "properties": {
+        "engine_version": {"const": "0.1.0"},
+        "rules_version": {"const": "1.0.0"},
+        "map_id": {"const": "arena_mvp_v1"},
+        "action_version": {"const": "1.0.0"},
+        "observation_version": {"const": "rl-observation-v1"}
+      }
+    },
+    "files": {
+      "type": "object",
+      "required": ["weights.safetensors", "evaluation.json"],
+      "propertyNames": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"},
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    }
+  }
+}

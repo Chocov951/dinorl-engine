@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-01",
+  "job_id": "job-01",
+  "status": "running",
+  "budget_units": 20,
+  "completed_units": 2,
+  "learner_transitions": 4096,
+  "engine_actions": 6012,
+  "epochs": 8,
+  "optimizer_steps": 64
+}

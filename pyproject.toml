@@ -7,10 +7,16 @@ name = "dinorl-engine"
 version = "0.1.0"
 description = "Moteur déterministe du jeu DinoRL"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "Flask>=3.1,<4",
+    "gymnasium>=1.0,<2",
     "jsonschema>=4.23,<5",
+    "numpy>=2.0,<3",
+    "safetensors>=0.5,<1",
+    "sb3-contrib>=2.5,<3",
+    "stable-baselines3>=2.5,<3",
+    "torch>=2.5,<3",
 ]
 
 [project.optional-dependencies]
@@ -44,4 +50,3 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/evaluation-v1.schema.json",
+  "title": "DinoRL evaluation v1",
+  "description": "Strict identity and lifecycle state for a versioned evaluation suite.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evaluation_id", "checkpoint_id", "suite", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "evaluation_id": {"$ref": "#/$defs/opaque_id"},
+    "checkpoint_id": {"$ref": "#/$defs/opaque_id"},
+    "suite": {"enum": ["deterministic", "publication"]},
+    "status": {"enum": ["pending", "running", "passed", "failed"]}
+  },
+  "$defs": {
+    "opaque_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"}
+  }
+}

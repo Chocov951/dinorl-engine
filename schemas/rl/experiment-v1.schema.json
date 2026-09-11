@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/experiment-v1.schema.json",
+  "title": "DinoRL experiment configuration v1",
+  "description": "Strict player-supplied configuration for one immutable RL experiment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "experiment_id", "parent_checkpoint_id", "seed", "budget_units", "reward_source", "ppo"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "experiment_id": {"$ref": "#/$defs/opaque_id"},
+    "parent_checkpoint_id": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/opaque_id"}]},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "budget_units": {"type": "integer", "minimum": 1},
+    "reward_source": {"type": "string", "minLength": 1, "maxLength": 32768},
+    "ppo": {"$ref": "#/$defs/ppo"}
+  },
+  "$defs": {
+    "opaque_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},
+    "ppo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["learning_rate", "gamma", "entropy_coef", "gae_lambda", "clip_range", "batch_size"],
+      "properties": {
+        "learning_rate": {"type": "number", "minimum": 0.00000001, "maximum": 0.1},
+        "gamma": {"type": "number", "minimum": 0, "maximum": 1},
+        "entropy_coef": {"type": "number", "minimum": 0, "maximum": 1},
+        "gae_lambda": {"type": "number", "minimum": 0, "maximum": 1},
+        "clip_range": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "batch_size": {"enum": [64, 128, 256, 512, 1024, 2048]}
+      }
+    }
+  }
+}
