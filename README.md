@@ -13,6 +13,11 @@ commit propre ; l'archive résultante s'importe avec
 `python -m dinorl_engine.server_checks import <archive>`. La CLI d'entraînement
 générale reste déclarative jusqu'aux lots suivants.
 
+Sur PythonAnywhere, le profil versionné `pythonanywhere` réutilise le build CPU
+Torch fourni par la plateforme dans un virtualenv créé avec
+`--system-site-packages`. Il s'exécute avec
+`python -m dinorl_engine.server_checks run --suite RL-S0 --profile pythonanywhere`.
+
 ## Contrats RL
 
 Les schémas machine v1 se trouvent dans [`schemas/rl/`](schemas/rl/) :

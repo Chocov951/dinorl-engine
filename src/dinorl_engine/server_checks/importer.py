@@ -7,7 +7,8 @@ import math
 from pathlib import Path
 
 from dinorl_engine.server_checks.manifests import ArchiveValidationError, read_archive
-from dinorl_engine.server_checks.runner import ServerCheckError, collect_provenance
+from dinorl_engine.server_checks.profiles import ProfileError, get_profile
+from dinorl_engine.server_checks.runner import ServerCheckError, verify_import_provenance
 
 __all__ = ["import_archive"]
 
@@ -42,7 +43,7 @@ def _expect_finite_number(value: object, field_name: str) -> float:
 
 
 def _validate_rl_s0_result(
-    result: dict[str, object], manifest: dict[str, object], current_provenance: dict[str, object]
+    result: dict[str, object], manifest: dict[str, object], root: Path
 ) -> tuple[str, str]:
     """Validate the complete fixed RL-S0 result and its local compatibility."""
 
@@ -56,7 +57,16 @@ def _validate_rl_s0_result(
         raise ServerCheckError("server archive result format is not supported")
     _require_exact_keys(
         result,
-        {"format", "suite", "run_id", "provenance", "configuration", "warmup", "repetitions"},
+        {
+            "format",
+            "suite",
+            "dependency_profile",
+            "run_id",
+            "provenance",
+            "configuration",
+            "warmup",
+            "repetitions",
+        },
         "result",
     )
     if result.get("configuration") != _RL_S0_CONFIGURATION:
@@ -75,9 +85,14 @@ def _validate_rl_s0_result(
         },
         "provenance",
     )
-    for key in ("git_commit", "lock_sha256", "installed_packages"):
-        if provenance.get(key) != current_provenance.get(key):
-            raise ServerCheckError(f"server archive provenance mismatch: {key}")
+    profile_name = result.get("dependency_profile")
+    if not isinstance(profile_name, str):
+        raise ServerCheckError("server archive dependency profile is invalid")
+    try:
+        profile = get_profile(profile_name)
+    except ProfileError as error:
+        raise ServerCheckError(str(error)) from error
+    verify_import_provenance(root, profile, provenance)
     warmup = _expect_mapping(result.get("warmup"), "warmup")
     _require_exact_keys(warmup, {"duration_seconds", "status"}, "warmup")
     if warmup.get("status") != "passed":
@@ -141,7 +156,7 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
     suite, run_id = _validate_rl_s0_result(
         archive.result,
         archive.manifest,
-        collect_provenance(root),
+        root,
     )
     destination = root / "benchmarks" / "server" / suite / run_id
     if destination.exists():

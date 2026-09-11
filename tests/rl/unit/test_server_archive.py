@@ -13,6 +13,7 @@ def _result(provenance: dict[str, object]) -> dict[str, object]:
     return {
         "format": "dinorl-server-result-v1",
         "suite": "RL-S0",
+        "dependency_profile": "standard",
         "run_id": "test-run-id",
         "provenance": provenance,
         "configuration": {
@@ -63,7 +64,7 @@ def test_rl_s0_archive_round_trips_and_imports_only_after_provenance_validation(
 
     archive = read_archive(archive_path)
     assert archive.result["run_id"] == "test-run-id"
-    monkeypatch.setattr(importer, "collect_provenance", lambda _root: provenance)  # type: ignore[attr-defined]
+    monkeypatch.setattr(importer, "verify_import_provenance", lambda *_args: None)  # type: ignore[attr-defined]
 
     imported = import_archive(archive_path=archive_path, root=tmp_path / "repository")
 

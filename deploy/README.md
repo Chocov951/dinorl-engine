@@ -33,6 +33,31 @@ L'installation éditable est volontaire : `schemas/*.json` reste l'unique source
 des contrats et le service les charge depuis le dépôt transféré. Elle n'autorise
 aucune modification du répertoire de release après activation.
 
+### Profil RL PythonAnywhere contraint par le quota
+
+Le profil versionné `pythonanywhere` est réservé à l'exécution de `RL-S0` sur
+l'image PythonAnywhere inventoriée avec CPython 3.12. Il réutilise le build CPU
+de Torch fourni par la plateforme et n'en télécharge pas une seconde copie.
+Créer l'unique virtualenv avec les paquets système visibles, puis installer les
+paquets du profil **sans** résolution de dépendances supplémentaire :
+
+```bash
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
+rmvirtualenv dinorl-engine-0.1.0
+mkvirtualenv dinorl-engine-0.1.0 --python=python3.12 --system-site-packages
+workon dinorl-engine-0.1.0
+pip install --no-cache-dir --no-deps -r requirements-pythonanywhere.lock
+pip install --no-deps -e .
+pip check
+python -m dinorl_engine.server_checks run --suite RL-S0 --profile pythonanywhere
+```
+
+`requirements-pythonanywhere.lock` contient toutes les dépendances runtime
+attendues, y compris celles déjà fournies par l'image. L'option `--no-deps`
+évite que pip ne remplace Torch CPU ou ne télécharge les dépendances GPU de la
+distribution PyPI. Le gate refuse un venv qui n'a pas été créé avec
+`--system-site-packages` ou dont une version diffère du lockfile.
+
 Créer les secrets hors du dépôt avec des permissions privées :
 
 ```bash

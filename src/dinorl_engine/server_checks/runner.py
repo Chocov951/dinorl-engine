@@ -14,6 +14,11 @@ from pathlib import Path
 from typing import Final
 
 from dinorl_engine.server_checks.manifests import create_archive
+from dinorl_engine.server_checks.profiles import (
+    STANDARD_PROFILE,
+    DependencyProfile,
+    runtime_version_matches,
+)
 from dinorl_engine.server_checks.suites.rl_s0 import run_warmup, run_with_measurement
 
 __all__ = [
@@ -23,9 +28,9 @@ __all__ = [
     "ensure_clean_tracked_worktree",
     "repository_root",
     "run_suite",
+    "verify_import_provenance",
 ]
 
-_LOCK_FILES: Final = ("requirements.lock", "requirements-dev.lock")
 _REQUIRED_MODULES: Final = {
     "gymnasium": "gymnasium",
     "torch": "torch",
@@ -109,17 +114,48 @@ def _locked_versions(path: Path) -> dict[str, str]:
     return versions
 
 
-def _verify_runtime_dependencies(root: Path) -> dict[str, str]:
-    lock_path = root / "requirements.lock"
+def _profile_lock_hashes(root: Path, profile: DependencyProfile) -> dict[str, str]:
+    """Hash every immutable lock which identifies the selected profile."""
+
+    lock_hashes: dict[str, str] = {}
+    for filename in profile.provenance_lock_filenames:
+        path = root / filename
+        if not path.is_file():
+            raise ServerCheckError(f"required lockfile is missing: {filename}")
+        lock_hashes[filename] = _sha256_file(path)
+    return lock_hashes
+
+
+def _verify_profile_environment(profile: DependencyProfile) -> None:
+    """Enforce the virtualenv feature required by a constrained profile."""
+
+    if not profile.requires_system_site_packages:
+        return
+    configuration = Path(sys.prefix) / "pyvenv.cfg"
+    try:
+        lines = configuration.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise ServerCheckError(
+            "pythonanywhere profile requires a virtualenv with system site packages"
+        ) from error
+    if not any(line.strip().lower() == "include-system-site-packages = true" for line in lines):
+        raise ServerCheckError(
+            "pythonanywhere profile requires --system-site-packages when creating the virtualenv"
+        )
+
+
+def _verify_runtime_dependencies(root: Path, profile: DependencyProfile) -> dict[str, str]:
+    _verify_profile_environment(profile)
+    lock_path = root / profile.runtime_lock_filename
     if not lock_path.is_file():
-        raise ServerCheckError("requirements.lock is missing")
+        raise ServerCheckError(f"{profile.runtime_lock_filename} is missing")
     installed: dict[str, str] = {}
     for package, expected_version in _locked_versions(lock_path).items():
         try:
             installed_version = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError as error:
             raise ServerCheckError(f"locked package is not installed: {package}") from error
-        if installed_version != expected_version:
+        if not runtime_version_matches(installed_version, expected_version):
             raise ServerCheckError(
                 "locked package version mismatch: "
                 f"{package}={installed_version}, expected {expected_version}"
@@ -132,30 +168,54 @@ def _verify_runtime_dependencies(root: Path) -> dict[str, str]:
             raise ServerCheckError(f"required module cannot be imported: {module}") from error
         if distribution not in installed:
             raise ServerCheckError(
-                f"required module is absent from requirements.lock: {distribution}"
+                f"required module is absent from {profile.runtime_lock_filename}: {distribution}"
             )
     importlib.import_module("dinorl_engine.core.engine")
     return installed
 
 
-def collect_provenance(root: Path) -> dict[str, object]:
+def collect_provenance(
+    root: Path, profile: DependencyProfile = STANDARD_PROFILE
+) -> dict[str, object]:
     """Capture the code, lock, runtime, CPU and OS identity of this gate run."""
 
-    lock_hashes: dict[str, str] = {}
-    for filename in _LOCK_FILES:
-        path = root / filename
-        if not path.is_file():
-            raise ServerCheckError(f"required lockfile is missing: {filename}")
-        lock_hashes[filename] = _sha256_file(path)
     return {
         "git_commit": _git(root, "rev-parse", "HEAD"),
-        "lock_sha256": lock_hashes,
-        "installed_packages": _verify_runtime_dependencies(root),
+        "lock_sha256": _profile_lock_hashes(root, profile),
+        "installed_packages": _verify_runtime_dependencies(root, profile),
         "python": sys.version,
         "platform": platform.platform(),
         "processor": platform.processor(),
         "cpu_count": os.cpu_count(),
     }
+
+
+def verify_import_provenance(
+    root: Path, profile: DependencyProfile, provenance: dict[str, object]
+) -> None:
+    """Verify an archive against its profile lock without requiring its host runtime.
+
+    A PythonAnywhere archive is imported on a development machine with a newer
+    Torch build, so importer validation compares the archive runtime to its
+    pinned profile rather than to the local interpreter's installed packages.
+    """
+
+    if provenance.get("git_commit") != _git(root, "rev-parse", "HEAD"):
+        raise ServerCheckError("server archive provenance mismatch: git_commit")
+    if provenance.get("lock_sha256") != _profile_lock_hashes(root, profile):
+        raise ServerCheckError("server archive provenance mismatch: lock_sha256")
+    installed = provenance.get("installed_packages")
+    if not isinstance(installed, dict):
+        raise ServerCheckError("server archive provenance installed_packages is invalid")
+    expected = _locked_versions(root / profile.runtime_lock_filename)
+    if set(installed) != set(expected):
+        raise ServerCheckError("server archive provenance mismatch: installed_packages")
+    for package, expected_version in expected.items():
+        installed_version = installed.get(package)
+        if not isinstance(installed_version, str) or not runtime_version_matches(
+            installed_version, expected_version
+        ):
+            raise ServerCheckError(f"server archive provenance mismatch: {package}")
 
 
 def _summary(result: dict[str, object]) -> str:
@@ -170,13 +230,16 @@ def _summary(result: dict[str, object]) -> str:
     return (
         "# RL-S0 server result\n\n"
         f"- Run: `{result['run_id']}`\n"
+        f"- Dependency profile: `{result['dependency_profile']}`\n"
         f"- Duration: `{duration}` seconds\n"
         f"- Peak RSS: `{memory}` bytes\n"
         "- Status: passed\n"
     )
 
 
-def run_suite(*, suite: str, root: Path, output_dir: Path) -> dict[str, object]:
+def run_suite(
+    *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
+) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
     if suite != "RL-S0":
@@ -186,8 +249,9 @@ def run_suite(*, suite: str, root: Path, output_dir: Path) -> dict[str, object]:
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",
         "suite": suite,
+        "dependency_profile": profile.name,
         "run_id": run_id,
-        "provenance": collect_provenance(root),
+        "provenance": collect_provenance(root, profile),
         "configuration": {
             "warmups": 1,
             "repetitions": 1,
@@ -212,4 +276,5 @@ def run_suite(*, suite: str, root: Path, output_dir: Path) -> dict[str, object]:
         "run_id": run_id,
         "status": "passed",
         "suite": suite,
+        "profile": profile.name,
     }

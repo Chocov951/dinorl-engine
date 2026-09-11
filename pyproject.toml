@@ -9,14 +9,14 @@ description = "Moteur déterministe du jeu DinoRL"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "Flask>=3.1,<4",
+    "Flask>=3.0,<4",
     "gymnasium>=1.0,<2",
     "jsonschema>=4.23,<5",
     "numpy>=2.0,<3",
-    "safetensors>=0.5,<1",
+    "safetensors>=0.4,<1",
     "sb3-contrib>=2.5,<3",
     "stable-baselines3>=2.5,<3",
-    "torch>=2.5,<3",
+    "torch>=2.3,<3",
 ]
 
 [project.optional-dependencies]

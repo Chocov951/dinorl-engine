@@ -9,6 +9,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from dinorl_engine.server_checks.importer import import_archive
+from dinorl_engine.server_checks.profiles import get_profile, profile_names
 from dinorl_engine.server_checks.runner import (
     DirtyWorktreeError,
     ServerCheckError,
@@ -32,7 +33,7 @@ def main(
 
     parser = argparse.ArgumentParser(
         prog="python -m dinorl_engine.server_checks",
-        epilog="Exit codes: 0 success; 2 invalid arguments; 3 not implemented.",
+        epilog="Exit codes: 0 success; 1 failed or rejected; 2 invalid arguments.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
     import_results = commands.add_parser("import", help="import a server gate archive")
@@ -40,6 +41,7 @@ def main(
     import_results.add_argument("--json", action="store_true")
     run = commands.add_parser("run", help="run a server gate suite")
     run.add_argument("--suite", required=True, choices=("RL-S0",))
+    run.add_argument("--profile", default="standard", choices=profile_names())
     run.add_argument("--output-dir", type=Path, default=Path.cwd())
     run.add_argument("--json", action="store_true")
     options = parser.parse_args(sys.argv[1:] if arguments is None else arguments)
@@ -49,12 +51,14 @@ def main(
         try:
             result = run_suite(
                 suite=options.suite,
+                profile=get_profile(options.profile),
                 root=repository_root(),
                 output_dir=options.output_dir,
             )
         except DirtyWorktreeError:
             result = {
                 "command": "run",
+                "profile": options.profile,
                 "reason": "tracked_worktree_dirty",
                 "status": "rejected",
                 "suite": options.suite,
@@ -67,6 +71,7 @@ def main(
         except ServerCheckError as error:
             result = {
                 "command": "run",
+                "profile": options.profile,
                 "reason": str(error),
                 "status": "failed",
                 "suite": options.suite,
