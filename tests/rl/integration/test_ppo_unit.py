@@ -7,6 +7,11 @@ import numpy as np
 from sb3_contrib import MaskablePPO
 
 from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
+from dinorl_engine.rl.env.vectorization import (
+    VectorBackend,
+    VectorEnvironmentConfig,
+    create_vector_environment,
+)
 from dinorl_engine.rl.training.unit import (
     PPO_EPOCHS,
     ROLLOUT_TRANSITIONS,
@@ -51,3 +56,17 @@ def test_maskable_ppo_trains_one_exact_unit_and_round_trips_a_saved_model(tmp_pa
     save_maskable_ppo(model, path)
     loaded = load_maskable_ppo(path, env)
     _assert_prediction_is_legal(loaded, env)
+
+
+def test_maskable_ppo_keeps_2048_global_transitions_with_two_environments() -> None:
+    configuration = VectorEnvironmentConfig(backend=VectorBackend.DUMMY, n_envs=2, seed=19)
+    environment = create_vector_environment(configuration)
+    try:
+        model = create_maskable_ppo(environment, seed=19, n_steps=configuration.n_steps)
+
+        result = train_one_unit(model, environment)
+
+        assert result.metrics.learner_transitions == ROLLOUT_TRANSITIONS
+        assert result.metrics.engine_actions >= ROLLOUT_TRANSITIONS
+    finally:
+        environment.close()

@@ -5,18 +5,19 @@ les contrôleurs scriptés, l'exécution de matchs, les replays et le service HT
 DinoRL.
 
 Le noyau du jeu est livré jusqu'au lot moteur L7. Les lots **RL-L0** à
-**RL-L2** ajoutent les contrats versionnés, les schémas JSON stricts, le
+**RL-L3** ajoutent les contrats versionnés, les schémas JSON stricts, le
 wrapper Gymnasium mono-agent avec masque d'actions, la récompense de référence
-et une unité CPU `MaskablePPO` de 2 048 transitions. La suite serveur `RL-S0`
-se lance avec `python -m dinorl_engine.server_checks run --suite RL-S0` sur un
-commit propre ; l'archive résultante s'importe avec
+et une unité CPU `MaskablePPO` de 2 048 transitions. RL-L3 ajoute la matrice
+vectorisée `DummyVecEnv`/`SubprocVecEnv` pour 2, 4 et 8 environnements. Les
+suites serveur `RL-S0` et `RL-S1` se lancent sur un commit propre ; leurs
+archives résultantes s'importent avec
 `python -m dinorl_engine.server_checks import <archive>`. La CLI d'entraînement
 générale reste déclarative jusqu'aux lots suivants.
 
 Sur PythonAnywhere, le profil versionné `pythonanywhere` réutilise le build CPU
 Torch fourni par la plateforme dans un virtualenv créé avec
 `--system-site-packages`. Il s'exécute avec
-`python -m dinorl_engine.server_checks run --suite RL-S0 --profile pythonanywhere`.
+`python -m dinorl_engine.server_checks run --suite RL-Sx --profile pythonanywhere`.
 
 ## Contrats RL
 

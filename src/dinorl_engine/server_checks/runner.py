@@ -20,6 +20,17 @@ from dinorl_engine.server_checks.profiles import (
     runtime_version_matches,
 )
 from dinorl_engine.server_checks.suites.rl_s0 import run_warmup, run_with_measurement
+from dinorl_engine.server_checks.suites.rl_s1 import (
+    REPEATED_MEASUREMENTS,
+    build_decision,
+    candidate_configurations,
+)
+from dinorl_engine.server_checks.suites.rl_s1 import (
+    run_warmup as run_s1_warmup,
+)
+from dinorl_engine.server_checks.suites.rl_s1 import (
+    run_with_measurement as run_s1_measurement,
+)
 
 __all__ = [
     "DirtyWorktreeError",
@@ -219,6 +230,8 @@ def verify_import_provenance(
 
 
 def _summary(result: dict[str, object]) -> str:
+    if result["suite"] == "RL-S1":
+        return _summary_rl_s1(result)
     repetition = result["repetitions"]
     if not isinstance(repetition, list) or len(repetition) != 1:
         raise ServerCheckError("RL-S0 must contain exactly one measured repetition")
@@ -237,14 +250,95 @@ def _summary(result: dict[str, object]) -> str:
     )
 
 
+def _summary_rl_s1(result: dict[str, object]) -> str:
+    """Render the server-selected vectorization decision into the result summary."""
+
+    decision = result["decision"]
+    if not isinstance(decision, dict):
+        raise ServerCheckError("RL-S1 decision has an invalid format")
+    return (
+        "# RL-S1 server result\n\n"
+        f"- Run: `{result['run_id']}`\n"
+        f"- Dependency profile: `{result['dependency_profile']}`\n"
+        f"- Selected backend: `{decision['backend']}`\n"
+        f"- Selected environments: `{decision['n_envs']}`\n"
+        f"- Median throughput: `{decision['median_transitions_per_second']}` transitions/s\n"
+        "- Criterion: highest median end-to-end throughput among the complete matrix\n"
+    )
+
+
+def _run_rl_s1(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
+    """Execute the complete measured RL-S1 matrix and archive its decision."""
+
+    seed = 19
+    configurations = candidate_configurations(seed=seed)
+    candidates: list[dict[str, object]] = []
+    for configuration in configurations:
+        candidates.append(
+            {
+                "backend": configuration.backend.value,
+                "n_envs": configuration.n_envs,
+                "n_steps": configuration.n_steps,
+                "warmup": run_s1_warmup(configuration),
+                "repetitions": [
+                    run_s1_measurement(configuration) for _ in range(REPEATED_MEASUREMENTS)
+                ],
+            }
+        )
+    decision = build_decision(candidates)
+    run_id = uuid.uuid4().hex
+    result: dict[str, object] = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S1",
+        "dependency_profile": profile.name,
+        "run_id": run_id,
+        "provenance": collect_provenance(root, profile),
+        "configuration": {
+            "warmups": 1,
+            "repetitions": REPEATED_MEASUREMENTS,
+            "seed": seed,
+            "rollout_transitions": 2048,
+            "epochs": 4,
+            "batch_size": 256,
+            "candidates": [
+                {
+                    "backend": configuration.backend.value,
+                    "n_envs": configuration.n_envs,
+                    "n_steps": configuration.n_steps,
+                }
+                for configuration in configurations
+            ],
+        },
+        "candidates": candidates,
+        "decision": decision,
+    }
+    archive = create_archive(
+        output_dir=output_dir,
+        suite="RL-S1",
+        run_id=run_id,
+        result=result,
+        summary=_summary(result),
+    )
+    return {
+        "archive": str(archive),
+        "archive_sha256": _sha256_file(archive),
+        "run_id": run_id,
+        "status": "passed",
+        "suite": "RL-S1",
+        "profile": profile.name,
+    }
+
+
 def run_suite(
     *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
 ) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
-    if suite != "RL-S0":
+    if suite not in {"RL-S0", "RL-S1"}:
         raise ServerCheckError(f"unsupported server suite: {suite}")
     ensure_clean_tracked_worktree(root)
+    if suite == "RL-S1":
+        return _run_rl_s1(profile=profile, root=root, output_dir=output_dir)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",

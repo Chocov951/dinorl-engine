@@ -10,6 +10,7 @@ from typing import Final
 import torch
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.maskable.policies import MaskableMultiInputActorCriticPolicy
+from stable_baselines3.common.vec_env import VecEnv
 
 from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
 from dinorl_engine.rl.policies.mlp import DinoRLMLPFeaturesExtractor
@@ -20,6 +21,7 @@ __all__ = [
     "ROLLOUT_TRANSITIONS",
     "PPOUnitMetrics",
     "PPOUnitResult",
+    "ROLLOUT_TRANSITIONS",
     "create_maskable_ppo",
     "load_maskable_ppo",
     "save_maskable_ppo",
@@ -50,7 +52,9 @@ class PPOUnitResult:
     metrics: PPOUnitMetrics
 
 
-def create_maskable_ppo(env: DinoRLSingleAgentEnv, *, seed: int) -> MaskablePPO:
+def create_maskable_ppo(
+    env: DinoRLSingleAgentEnv | VecEnv, *, seed: int, n_steps: int = ROLLOUT_TRANSITIONS
+) -> MaskablePPO:
     """Build the fixed CPU-only V1 provisional MLP policy."""
 
     torch.set_num_threads(_TORCH_THREADS)
@@ -58,7 +62,7 @@ def create_maskable_ppo(env: DinoRLSingleAgentEnv, *, seed: int) -> MaskablePPO:
         MaskableMultiInputActorCriticPolicy,
         env,
         learning_rate=3e-4,
-        n_steps=ROLLOUT_TRANSITIONS,
+        n_steps=n_steps,
         batch_size=PPO_BATCH_SIZE,
         n_epochs=PPO_EPOCHS,
         gamma=0.99,
@@ -95,14 +99,28 @@ def _finite_diagnostics(model: MaskablePPO) -> dict[str, float]:
     return diagnostics
 
 
-def train_one_unit(model: MaskablePPO, env: DinoRLSingleAgentEnv) -> PPOUnitResult:
+def _total_counter(env: DinoRLSingleAgentEnv | VecEnv, attribute: str) -> int:
+    """Read an aggregate monotonic counter from one or many environments."""
+
+    if isinstance(env, VecEnv):
+        values = env.get_attr(attribute)
+        if not all(type(value) is int for value in values):
+            raise RuntimeError(f"vector environment has an invalid {attribute} counter")
+        return sum(values)
+    value = getattr(env, attribute)
+    if type(value) is not int:
+        raise RuntimeError(f"environment has an invalid {attribute} counter")
+    return value
+
+
+def train_one_unit(model: MaskablePPO, env: DinoRLSingleAgentEnv | VecEnv) -> PPOUnitResult:
     """Collect exactly 2,048 learner transitions and optimize for four epochs."""
 
-    learner_before = env.total_learner_transitions
-    engine_before = env.total_engine_actions
+    learner_before = _total_counter(env, "total_learner_transitions")
+    engine_before = _total_counter(env, "total_engine_actions")
     model.learn(total_timesteps=ROLLOUT_TRANSITIONS, reset_num_timesteps=False)
-    learner_transitions = env.total_learner_transitions - learner_before
-    engine_actions = env.total_engine_actions - engine_before
+    learner_transitions = _total_counter(env, "total_learner_transitions") - learner_before
+    engine_actions = _total_counter(env, "total_engine_actions") - engine_before
     if learner_transitions != ROLLOUT_TRANSITIONS:
         raise RuntimeError(
             f"PPO unit collected an unexpected number of learner transitions: {learner_transitions}"
@@ -125,7 +143,7 @@ def save_maskable_ppo(model: MaskablePPO, path: Path) -> None:
     model.save(str(path))
 
 
-def load_maskable_ppo(path: Path, env: DinoRLSingleAgentEnv) -> MaskablePPO:
+def load_maskable_ppo(path: Path, env: DinoRLSingleAgentEnv | VecEnv) -> MaskablePPO:
     """Reload a locally-created internal SB3 model on the CPU."""
 
     return MaskablePPO.load(str(path), env=env, device="cpu")

@@ -91,3 +91,15 @@ def test_pythonanywhere_profile_is_selectable_for_a_server_gate() -> None:
         )
 
     assert json.loads("".join(output))["profile"] == "pythonanywhere"
+
+
+def test_rl_s1_is_selectable_for_a_server_gate() -> None:
+    output: list[str] = []
+
+    with patch(
+        "dinorl_engine.server_checks.cli.run_suite",
+        side_effect=DirtyWorktreeError("tracked_worktree_dirty"),
+    ):
+        assert main(["run", "--suite", "RL-S1", "--json"], output=output.append) == 1
+
+    assert json.loads("".join(output))["suite"] == "RL-S1"

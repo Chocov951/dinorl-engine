@@ -35,8 +35,8 @@ aucune modification du répertoire de release après activation.
 
 ### Profil RL PythonAnywhere contraint par le quota
 
-Le profil versionné `pythonanywhere` est réservé à l'exécution de `RL-S0` sur
-l'image PythonAnywhere inventoriée avec CPython 3.12. Il réutilise le build CPU
+Le profil versionné `pythonanywhere` est réservé aux gates RL sur l'image
+PythonAnywhere inventoriée avec CPython 3.12. Il réutilise le build CPU
 de Torch fourni par la plateforme et n'en télécharge pas une seconde copie.
 Créer l'unique virtualenv avec les paquets système visibles, puis installer les
 paquets du profil **sans** résolution de dépendances supplémentaire :
@@ -57,6 +57,26 @@ attendues, y compris celles déjà fournies par l'image. L'option `--no-deps`
 évite que pip ne remplace Torch CPU ou ne télécharge les dépendances GPU de la
 distribution PyPI. Le gate refuse un venv qui n'a pas été créé avec
 `--system-site-packages` ou dont une version diffère du lockfile.
+
+Après un `git pull` apportant un nouveau lot RL, réutiliser ce même virtualenv :
+ne le recréer et ne rejouer l'installation du profil que si
+`requirements-pythonanywhere.lock` a changé. Pour `RL-S1`, le commit doit être
+propre et la suite compare les six configurations `DummyVecEnv`/`SubprocVecEnv`
+pour 2, 4 et 8 environnements, avec un échauffement et cinq mesures chacune :
+
+```bash
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
+workon dinorl-engine-0.1.0
+pip install --no-deps -e .
+pip check
+git diff --quiet
+git diff --cached --quiet
+python -m dinorl_engine.server_checks run --suite RL-S1 --profile pythonanywhere
+```
+
+Importer localement l'archive produite sur le même commit. L'import crée aussi
+`benchmarks/server/RL-S1/<run_id>/decision.md`, qui fige le backend et le
+nombre d'environnements sélectionnés par le débit médian end-to-end.
 
 Créer les secrets hors du dépôt avec des permissions privées :
 
