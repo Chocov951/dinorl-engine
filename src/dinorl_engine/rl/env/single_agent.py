@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 from collections.abc import Callable
 from random import Random
-from typing import Final
+from typing import Final, cast
 
 import gymnasium as gym
 import numpy as np
@@ -87,6 +88,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._opponent: Controller | None = None
         self._learner_transitions = 0
         self._engine_actions = 0
+        self._engine_action_history: list[int] = []
         self._total_learner_transitions = 0
         self._total_engine_actions = 0
         self._reward_program = reward_program
@@ -219,6 +221,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._opponent = create_scripted_controller(self._opponent_id)
         self._learner_transitions = 0
         self._engine_actions = 0
+        self._engine_action_history = []
         self._play_opponent_turn(collect_reward=False)
         return self._observation(), self._info()
 
@@ -247,7 +250,142 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         transition = self.engine.step(action)
         self._engine_actions += 1
         self._total_engine_actions += 1
+        self._engine_action_history.append(int(action))
         return transition, before, legal_actions
+
+    def export_recovery_state(self) -> dict[str, object]:
+        """Export every mutable stream required to resume this uncompleted episode.
+
+        Scripted opponents are intentionally stateless.  Their identifier together
+        with the action history fully reconstructs the engine and the opponent's
+        future decisions without serializing executable controller objects.
+        """
+
+        return {
+            "format": "dinorl-single-agent-recovery-v1",
+            "base_seed": self._base_seed,
+            "environment_index": self._environment_index,
+            "episode_index": self._episode_index,
+            "engine_seed": self.engine.seed,
+            "engine_actions": list(self._engine_action_history),
+            "learner_actor": self._learner().name,
+            "first_actor": self._first().name,
+            "opponent_id": self._opponent_id,
+            "counters": {
+                "learner_transitions": self._learner_transitions,
+                "engine_actions": self._engine_actions,
+                "total_learner_transitions": self._total_learner_transitions,
+                "total_engine_actions": self._total_engine_actions,
+            },
+            "numpy_rng": copy.deepcopy(self.np_random.bit_generator.state),
+        }
+
+    def snapshot_recovery_state(self) -> dict[str, object]:
+        """Return a compact observable state useful for exact-recovery assertions."""
+
+        return {
+            "public": dict(self.engine.snapshot_public()),
+            "learner_transitions": self._learner_transitions,
+            "engine_actions": self._engine_actions,
+            "total_learner_transitions": self._total_learner_transitions,
+            "total_engine_actions": self._total_engine_actions,
+            "episode_index": self._episode_index,
+            "opponent_id": self._opponent_id,
+        }
+
+    def restore_recovery_state(self, recovery: object) -> None:
+        """Restore an exported episode without resetting the underlying trajectory."""
+
+        if (
+            not isinstance(recovery, dict)
+            or recovery.get("format") != "dinorl-single-agent-recovery-v1"
+        ):
+            raise ValueError("single-agent recovery state has an invalid format")
+        required = {
+            "format",
+            "base_seed",
+            "environment_index",
+            "episode_index",
+            "engine_seed",
+            "engine_actions",
+            "learner_actor",
+            "first_actor",
+            "opponent_id",
+            "counters",
+            "numpy_rng",
+        }
+        if set(recovery) != required:
+            raise ValueError("single-agent recovery state has unexpected fields")
+        base_seed = recovery["base_seed"]
+        environment_index = recovery["environment_index"]
+        episode_index = recovery["episode_index"]
+        engine_seed = recovery["engine_seed"]
+        history = recovery["engine_actions"]
+        counters = recovery["counters"]
+        learner_name = recovery["learner_actor"]
+        first_name = recovery["first_actor"]
+        opponent_id = recovery["opponent_id"]
+        numpy_rng = recovery["numpy_rng"]
+        if (
+            type(base_seed) is not int
+            or not 0 <= base_seed <= _MAX_SEED
+            or type(environment_index) is not int
+            or environment_index < 0
+            or type(episode_index) is not int
+            or episode_index < 0
+            or type(engine_seed) is not int
+            or not 0 <= engine_seed < _ENGINE_SEED_MODULUS
+            or not isinstance(history, list)
+            or not isinstance(counters, dict)
+            or not isinstance(learner_name, str)
+            or not isinstance(first_name, str)
+            or opponent_id not in SCRIPTED_CONTROLLER_IDS
+            or not isinstance(numpy_rng, dict)
+        ):
+            raise ValueError("single-agent recovery state has invalid values")
+        counter_names = {
+            "learner_transitions",
+            "engine_actions",
+            "total_learner_transitions",
+            "total_engine_actions",
+        }
+        if set(counters) != counter_names or any(
+            type(value) is not int or value < 0 for value in counters.values()
+        ):
+            raise ValueError("single-agent recovery counters are invalid")
+        if any(
+            type(action_index) is not int or not 0 <= action_index < len(Action)
+            for action_index in history
+        ):
+            raise ValueError("single-agent recovery action history is invalid")
+        try:
+            learner_actor = Actor[learner_name]
+            first_actor = Actor[first_name]
+        except KeyError as error:
+            raise ValueError("single-agent recovery actor is invalid") from error
+        engine = DinoRLEnv(MAP_ID, seed=engine_seed, replay=False)
+        engine.reset(first_actor=first_actor)
+        for action_index in history:
+            engine.step(Action(action_index))
+        if len(history) != counters["engine_actions"]:
+            raise ValueError("single-agent recovery engine action count is inconsistent")
+        self._base_seed = base_seed
+        self._environment_index = environment_index
+        self._episode_index = episode_index
+        self._engine = engine
+        self._learner_actor = learner_actor
+        self._first_actor = first_actor
+        self._opponent_id = cast(ControllerId, opponent_id)
+        self._opponent = create_scripted_controller(self._opponent_id)
+        self._engine_action_history = list(history)
+        self._learner_transitions = counters["learner_transitions"]
+        self._engine_actions = counters["engine_actions"]
+        self._total_learner_transitions = counters["total_learner_transitions"]
+        self._total_engine_actions = counters["total_engine_actions"]
+        try:
+            self.np_random.bit_generator.state = copy.deepcopy(numpy_rng)
+        except (TypeError, ValueError) as error:
+            raise ValueError("single-agent recovery NumPy RNG is invalid") from error
 
     def _transition_reward(
         self, transition: ActionTransition, before: PublicSnapshot, legal_actions: tuple[bool, ...]

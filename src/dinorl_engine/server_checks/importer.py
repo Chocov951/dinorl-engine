@@ -23,6 +23,8 @@ from dinorl_engine.server_checks.suites.rl_s2 import (
 from dinorl_engine.server_checks.suites.rl_s2 import (
     REPEATED_MEASUREMENTS as RL_S2_REPEATED_MEASUREMENTS,
 )
+from dinorl_engine.server_checks.suites.rl_s3 import SELECTED_CONFIGURATION
+from dinorl_engine.server_checks.suites.rl_s3 import build_decision as build_s3_decision
 
 __all__ = ["import_archive"]
 
@@ -41,6 +43,14 @@ _RL_S2_CONFIGURATION = {
     "corpus_transitions": CORPUS_TRANSITIONS,
     "iterations": ITERATIONS,
     "max_overhead_ratio": MAX_OVERHEAD_RATIO,
+}
+_RL_S3_CONFIGURATION = {
+    "seed": SELECTED_CONFIGURATION.seed,
+    "backend": SELECTED_CONFIGURATION.backend.value,
+    "n_envs": SELECTED_CONFIGURATION.n_envs,
+    "n_steps": SELECTED_CONFIGURATION.n_steps,
+    "rollout_transitions": 2048,
+    "priority_modes": ["unit_boundary", "separate_worker"],
 }
 
 
@@ -365,6 +375,133 @@ def _validate_rl_s2_result(
     return suite, run_id
 
 
+def _validate_rl_s3_timing(value: object, field_name: str) -> None:
+    timing = _expect_mapping(value, field_name)
+    _require_exact_keys(
+        timing,
+        {"collection_seconds", "optimization_seconds", "checkpoint_seconds"},
+        field_name,
+    )
+    for name, seconds in timing.items():
+        if _expect_finite_number(seconds, f"{field_name}.{name}") < 0:
+            raise ServerCheckError(f"server archive {field_name}.{name} must be non-negative")
+
+
+def _validate_rl_s3_result(
+    result: dict[str, object], manifest: dict[str, object], root: Path
+) -> tuple[str, str]:
+    suite, run_id = result.get("suite"), result.get("run_id")
+    if suite != "RL-S3" or not isinstance(run_id, str) or not run_id:
+        raise ServerCheckError("server archive is not an RL-S3 result with a run identifier")
+    if manifest.get("suite") != suite or manifest.get("run_id") != run_id:
+        raise ServerCheckError("server archive manifest and result identity differ")
+    _require_exact_keys(
+        result,
+        {
+            "format",
+            "suite",
+            "dependency_profile",
+            "run_id",
+            "provenance",
+            "configuration",
+            "resume",
+            "crash",
+            "priority_candidates",
+            "decision",
+            "passed",
+        },
+        "result",
+    )
+    if result.get("format") != "dinorl-server-result-v1":
+        raise ServerCheckError("server archive result format is not supported")
+    if result.get("configuration") != _RL_S3_CONFIGURATION:
+        raise ServerCheckError("server archive RL-S3 configuration is incomplete or unexpected")
+    _verify_result_provenance(result, root)
+    resume = _expect_mapping(result.get("resume"), "resume")
+    _require_exact_keys(
+        resume,
+        {
+            "continuous_weights_sha256",
+            "resumed_weights_sha256",
+            "exact",
+            "continuous",
+            "resumed",
+            "processes_cleaned_up",
+        },
+        "resume",
+    )
+    for name in ("continuous_weights_sha256", "resumed_weights_sha256"):
+        digest = resume.get(name)
+        if (
+            not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+        ):
+            raise ServerCheckError(f"server archive resume.{name} is not a SHA-256 digest")
+    if not isinstance(resume.get("exact"), bool) or not isinstance(
+        resume.get("processes_cleaned_up"), bool
+    ):
+        raise ServerCheckError("server archive resume flags are invalid")
+    _validate_rl_s3_timing(resume.get("continuous"), "resume.continuous")
+    _validate_rl_s3_timing(resume.get("resumed"), "resume.resumed")
+    crash = _expect_mapping(result.get("crash"), "crash")
+    _require_exact_keys(
+        crash,
+        {"before_rename_preserved", "post_rename_recovered", "no_duplicate_debit"},
+        "crash",
+    )
+    if not all(isinstance(value, bool) for value in crash.values()):
+        raise ServerCheckError("server archive crash flags are invalid")
+    candidates = result.get("priority_candidates")
+    if not isinstance(candidates, list) or len(candidates) != 2:
+        raise ServerCheckError("server archive RL-S3 priority candidates are incomplete")
+    decision_inputs: list[dict[str, object]] = []
+    for index, candidate_value in enumerate(candidates):
+        candidate = _expect_mapping(candidate_value, f"priority_candidates[{index}]")
+        _require_exact_keys(
+            candidate,
+            {
+                "mode",
+                "play_latency_seconds",
+                "training_transitions_per_second",
+                "interactive_served",
+            },
+            f"priority_candidates[{index}]",
+        )
+        if not isinstance(candidate.get("interactive_served"), bool):
+            raise ServerCheckError(f"server archive priority_candidates[{index}] has invalid flag")
+        decision_inputs.append(
+            {
+                "mode": candidate["mode"],
+                "play_latency_seconds": candidate["play_latency_seconds"],
+                "training_transitions_per_second": candidate["training_transitions_per_second"],
+            }
+        )
+    try:
+        expected_decision = build_s3_decision(decision_inputs)
+    except ValueError as error:
+        raise ServerCheckError(str(error)) from error
+    if result.get("decision") != expected_decision:
+        raise ServerCheckError("server archive RL-S3 decision does not match its measurements")
+    expected_passed = (
+        resume["exact"] is True
+        and resume["processes_cleaned_up"] is True
+        and crash
+        == {
+            "before_rename_preserved": True,
+            "post_rename_recovered": True,
+            "no_duplicate_debit": True,
+        }
+        and all(
+            _expect_mapping(candidate, "priority candidate")["interactive_served"] is True
+            for candidate in candidates
+        )
+    )
+    if result.get("passed") is not expected_passed:
+        raise ServerCheckError("server archive RL-S3 passed flag does not match its evidence")
+    return suite, run_id
+
+
 def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
     """Verify then install an RL-S0 server archive under ``benchmarks/server``."""
 
@@ -380,6 +517,8 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
         suite, run_id = _validate_rl_s1_result(archive.result, archive.manifest, root)
     elif archive.result.get("suite") == "RL-S2":
         suite, run_id = _validate_rl_s2_result(archive.result, archive.manifest, root)
+    elif archive.result.get("suite") == "RL-S3":
+        suite, run_id = _validate_rl_s3_result(archive.result, archive.manifest, root)
     else:
         raise ServerCheckError("server archive suite is not supported")
     destination = root / "benchmarks" / "server" / suite / run_id
@@ -415,6 +554,17 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
             "- Exact AST/VM/native parity: `passed`\n"
             f"- Median VM overhead: `{decision['median_overhead_ratio']}`\n"
             f"- Maximum permitted overhead: `{decision['max_overhead_ratio']}`\n"
+            f"- Status: {status}\n",
+            encoding="utf-8",
+        )
+    elif suite == "RL-S3":
+        decision = _expect_mapping(archive.result["decision"], "decision")
+        status = "passed" if archive.result["passed"] is True else "failed"
+        (destination / "decision.md").write_text(
+            "# RL-S3 interactive priority decision\n\n"
+            f"- Mode: `{decision['mode']}`\n"
+            f"- Play latency: `{decision['play_latency_seconds']}` seconds\n"
+            "- Selection: minimum play latency, then maximum learning throughput.\n"
             f"- Status: {status}\n",
             encoding="utf-8",
         )

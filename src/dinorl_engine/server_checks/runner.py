@@ -42,6 +42,15 @@ from dinorl_engine.server_checks.suites.rl_s2 import (
 )
 from dinorl_engine.server_checks.suites.rl_s2 import run_measurement as run_s2_measurement
 from dinorl_engine.server_checks.suites.rl_s2 import run_warmup as run_s2_warmup
+from dinorl_engine.server_checks.suites.rl_s3 import (
+    SELECTED_CONFIGURATION,
+)
+from dinorl_engine.server_checks.suites.rl_s3 import (
+    build_decision as build_s3_decision,
+)
+from dinorl_engine.server_checks.suites.rl_s3 import (
+    run_measurement as run_s3_measurement,
+)
 
 __all__ = [
     "DirtyWorktreeError",
@@ -245,6 +254,8 @@ def _summary(result: dict[str, object]) -> str:
         return _summary_rl_s1(result)
     if result["suite"] == "RL-S2":
         return _summary_rl_s2(result)
+    if result["suite"] == "RL-S3":
+        return _summary_rl_s3(result)
     repetition = result["repetitions"]
     if not isinstance(repetition, list) or len(repetition) != 1:
         raise ServerCheckError("RL-S0 must contain exactly one measured repetition")
@@ -294,6 +305,24 @@ def _summary_rl_s2(result: dict[str, object]) -> str:
         f"- Median VM overhead: `{decision['median_overhead_ratio']}`\n"
         f"- Maximum permitted overhead: `{decision['max_overhead_ratio']}`\n"
         "- Exact AST/VM/native parity: passed\n"
+        f"- Status: {status}\n"
+    )
+
+
+def _summary_rl_s3(result: dict[str, object]) -> str:
+    """Render the server-selected interactive priority mode."""
+
+    decision = result["decision"]
+    if not isinstance(decision, dict):
+        raise ServerCheckError("RL-S3 decision has an invalid format")
+    status = "passed" if result["passed"] else "failed"
+    return (
+        "# RL-S3 server result\n\n"
+        f"- Run: `{result['run_id']}`\n"
+        f"- Dependency profile: `{result['dependency_profile']}`\n"
+        f"- Selected interactive mode: `{decision['mode']}`\n"
+        f"- Interactive latency: `{decision['play_latency_seconds']}` seconds\n"
+        "- Selection: minimum play latency, then maximum learning throughput\n"
         f"- Status: {status}\n"
     )
 
@@ -414,18 +443,100 @@ def _run_rl_s2(*, profile: DependencyProfile, root: Path, output_dir: Path) -> d
     }
 
 
+def _run_rl_s3(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
+    """Run exact recovery and the two interactive-priority alternatives on the server."""
+
+    measurement = run_s3_measurement()
+    resume = measurement.get("resume")
+    crash = measurement.get("crash")
+    candidates = measurement.get("priority_candidates")
+    decision = measurement.get("decision")
+    if (
+        not isinstance(resume, dict)
+        or not isinstance(crash, dict)
+        or not isinstance(candidates, list)
+        or not isinstance(decision, dict)
+    ):
+        raise ServerCheckError("RL-S3 produced an invalid measurement")
+    expected_decision = build_s3_decision(
+        [
+            {
+                "mode": candidate.get("mode"),
+                "play_latency_seconds": candidate.get("play_latency_seconds"),
+                "training_transitions_per_second": candidate.get("training_transitions_per_second"),
+            }
+            for candidate in candidates
+            if isinstance(candidate, dict)
+        ]
+    )
+    if decision != expected_decision:
+        raise ServerCheckError("RL-S3 decision does not match its priority measurements")
+    passed = (
+        resume.get("exact") is True
+        and resume.get("processes_cleaned_up") is True
+        and crash
+        == {
+            "before_rename_preserved": True,
+            "post_rename_recovered": True,
+            "no_duplicate_debit": True,
+        }
+        and all(
+            isinstance(candidate, dict) and candidate.get("interactive_served") is True
+            for candidate in candidates
+        )
+    )
+    run_id = uuid.uuid4().hex
+    result: dict[str, object] = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S3",
+        "dependency_profile": profile.name,
+        "run_id": run_id,
+        "provenance": collect_provenance(root, profile),
+        "configuration": {
+            "seed": SELECTED_CONFIGURATION.seed,
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "priority_modes": ["unit_boundary", "separate_worker"],
+        },
+        "resume": resume,
+        "crash": crash,
+        "priority_candidates": candidates,
+        "decision": decision,
+        "passed": passed,
+    }
+    archive = create_archive(
+        output_dir=output_dir,
+        suite="RL-S3",
+        run_id=run_id,
+        result=result,
+        summary=_summary(result),
+    )
+    return {
+        "archive": str(archive),
+        "archive_sha256": _sha256_file(archive),
+        "run_id": run_id,
+        "status": "passed" if passed else "failed",
+        "suite": "RL-S3",
+        "profile": profile.name,
+    }
+
+
 def run_suite(
     *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
 ) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
-    if suite not in {"RL-S0", "RL-S1", "RL-S2"}:
+    if suite not in {"RL-S0", "RL-S1", "RL-S2", "RL-S3"}:
         raise ServerCheckError(f"unsupported server suite: {suite}")
     ensure_clean_tracked_worktree(root)
     if suite == "RL-S1":
         return _run_rl_s1(profile=profile, root=root, output_dir=output_dir)
     if suite == "RL-S2":
         return _run_rl_s2(profile=profile, root=root, output_dir=output_dir)
+    if suite == "RL-S3":
+        return _run_rl_s3(profile=profile, root=root, output_dir=output_dir)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",

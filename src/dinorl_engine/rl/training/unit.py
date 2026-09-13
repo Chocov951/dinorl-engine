@@ -10,6 +10,7 @@ from typing import Final
 import torch
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.maskable.policies import MaskableMultiInputActorCriticPolicy
+from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import VecEnv
 
 from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
@@ -113,12 +114,21 @@ def _total_counter(env: DinoRLSingleAgentEnv | VecEnv, attribute: str) -> int:
     return value
 
 
-def train_one_unit(model: MaskablePPO, env: DinoRLSingleAgentEnv | VecEnv) -> PPOUnitResult:
+def train_one_unit(
+    model: MaskablePPO,
+    env: DinoRLSingleAgentEnv | VecEnv,
+    *,
+    callback: BaseCallback | None = None,
+) -> PPOUnitResult:
     """Collect exactly 2,048 learner transitions and optimize for four epochs."""
 
     learner_before = _total_counter(env, "total_learner_transitions")
     engine_before = _total_counter(env, "total_engine_actions")
-    model.learn(total_timesteps=ROLLOUT_TRANSITIONS, reset_num_timesteps=False)
+    model.learn(
+        total_timesteps=ROLLOUT_TRANSITIONS,
+        reset_num_timesteps=False,
+        callback=callback,
+    )
     learner_transitions = _total_counter(env, "total_learner_transitions") - learner_before
     engine_actions = _total_counter(env, "total_engine_actions") - engine_before
     if learner_transitions != ROLLOUT_TRANSITIONS:

@@ -107,6 +107,44 @@ L'import crée `benchmarks/server/RL-S2/<run_id>/decision.md`. Une surcharge
 médiane strictement supérieure à 10 % est importable comme preuve, mais bloque
 RL-L5 : profiler la VM avant toute extension native.
 
+### Checkpoint RL-S3 — Atomicité, reprise et priorité interactive
+
+Après le commit RL-L5, `RL-S3` exécute six unités PPO sur la configuration
+retenue par RL-S1 (`DummyVecEnv`, huit environnements). Il vérifie l'équivalence
+bit-à-bit entre deux unités continues et une reprise après la première unité,
+les pannes injectées avant et après le renommage atomique, le débit idempotent,
+et les deux modes de priorité interactive. La suite choisit d'abord la latence
+de jeu la plus faible, puis le meilleur débit d'entraînement en cas d'égalité.
+
+Le dépôt doit être au commit exact à mesurer et sans modification suivie. Placer
+l'archive hors du dépôt afin de conserver cette propriété :
+
+```bash
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
+workon dinorl-engine-0.1.0
+pip install --no-deps -e .
+pip check
+git diff --quiet
+git diff --cached --quiet
+mkdir -p /home/DinoRL/server-results
+python -m dinorl_engine.server_checks run \
+  --suite RL-S3 \
+  --profile pythonanywhere \
+  --output-dir /home/DinoRL/server-results \
+  --json
+```
+
+Télécharger `server-results-RL-S3-<run_id>.tar.gz`, puis l'importer localement
+sur le même commit :
+
+```powershell
+$archive = "$env:USERPROFILE\Downloads\server-results-RL-S3-<run_id>.tar.gz"
+.venv\Scripts\python.exe -m dinorl_engine.server_checks import "$archive"
+```
+
+L'import crée `benchmarks/server/RL-S3/<run_id>/decision.md`. Seule une archive
+dont `passed` est vrai autorise RL-L6 et fige le mode de priorité retenu.
+
 Créer les secrets hors du dépôt avec des permissions privées :
 
 ```bash

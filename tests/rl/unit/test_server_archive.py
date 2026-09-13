@@ -20,6 +20,8 @@ from dinorl_engine.server_checks.suites.rl_s2 import (
 from dinorl_engine.server_checks.suites.rl_s2 import (
     REPEATED_MEASUREMENTS as RL_S2_REPEATED_MEASUREMENTS,
 )
+from dinorl_engine.server_checks.suites.rl_s3 import SELECTED_CONFIGURATION
+from dinorl_engine.server_checks.suites.rl_s3 import build_decision as build_s3_decision
 
 
 def _result(provenance: dict[str, object]) -> dict[str, object]:
@@ -214,3 +216,90 @@ def test_rl_s2_archive_imports_a_complete_blocked_gate(tmp_path: Path, monkeypat
 
     decision = Path(str(imported["destination"])) / "decision.md"
     assert "blocked: profile before native extension" in decision.read_text(encoding="utf-8")
+
+
+def test_rl_s3_archive_imports_the_versioned_interactive_priority_decision(
+    tmp_path: Path, monkeypatch: object
+) -> None:
+    candidates = [
+        {
+            "mode": "unit_boundary",
+            "play_latency_seconds": 2.0,
+            "training_transitions_per_second": 100.0,
+            "interactive_served": True,
+        },
+        {
+            "mode": "separate_worker",
+            "play_latency_seconds": 0.1,
+            "training_transitions_per_second": 90.0,
+            "interactive_served": True,
+        },
+    ]
+    result = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S3",
+        "dependency_profile": "standard",
+        "run_id": "test-s3-run-id",
+        "provenance": {
+            "git_commit": "a" * 40,
+            "lock_sha256": {"requirements.lock": "b" * 64},
+            "installed_packages": {"torch": "2.14.0"},
+            "python": "3.12.13",
+            "platform": "test-platform",
+            "processor": "test-processor",
+            "cpu_count": 1,
+        },
+        "configuration": {
+            "seed": SELECTED_CONFIGURATION.seed,
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "priority_modes": ["unit_boundary", "separate_worker"],
+        },
+        "resume": {
+            "continuous_weights_sha256": "a" * 64,
+            "resumed_weights_sha256": "a" * 64,
+            "exact": True,
+            "continuous": {
+                "collection_seconds": 1.0,
+                "optimization_seconds": 1.0,
+                "checkpoint_seconds": 0.1,
+            },
+            "resumed": {
+                "collection_seconds": 1.0,
+                "optimization_seconds": 1.0,
+                "checkpoint_seconds": 0.1,
+            },
+            "processes_cleaned_up": True,
+        },
+        "crash": {
+            "before_rename_preserved": True,
+            "post_rename_recovered": True,
+            "no_duplicate_debit": True,
+        },
+        "priority_candidates": candidates,
+        "decision": build_s3_decision(
+            [
+                {
+                    key: candidate[key]
+                    for key in ("mode", "play_latency_seconds", "training_transitions_per_second")
+                }
+                for candidate in candidates
+            ]
+        ),
+        "passed": True,
+    }
+    archive_path = create_archive(
+        output_dir=tmp_path,
+        suite="RL-S3",
+        run_id="test-s3-run-id",
+        result=result,
+        summary="# RL-S3\n",
+    )
+    monkeypatch.setattr(importer, "verify_import_provenance", lambda *_args: None)  # type: ignore[attr-defined]
+
+    imported = import_archive(archive_path=archive_path, root=tmp_path / "repository")
+
+    decision = Path(str(imported["destination"])) / "decision.md"
+    assert "separate_worker" in decision.read_text(encoding="utf-8")
