@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Callable
 from random import Random
 from typing import Final
 
@@ -89,6 +90,9 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._total_learner_transitions = 0
         self._total_engine_actions = 0
         self._reward_program = reward_program
+        self._reward_evaluator: Callable[[dict[str, object]], float] | None = (
+            reward_program.vm_evaluator if reward_program is not None else None
+        )
         self.observation_space = gym.spaces.Dict(
             {
                 "grid": gym.spaces.Box(
@@ -251,8 +255,8 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         """Score one public engine transition from the learner perspective."""
 
         result = self.engine.result if self.engine.is_terminal else None
-        if self._reward_program is not None:
-            return self._reward_program.evaluate_vm(
+        if self._reward_evaluator is not None:
+            return self._reward_evaluator(
                 public_reward_transition(
                     before=before,
                     after=self.engine.snapshot_public(),

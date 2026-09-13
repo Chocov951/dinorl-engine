@@ -6,8 +6,9 @@ import hashlib
 import heapq
 import math
 from collections import deque
-from dataclasses import dataclass
-from functools import lru_cache
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from functools import lru_cache, partial
 from typing import Final, TypeGuard
 
 from dinorl_engine.rl.rewards.bytecode import BytecodeFunction, compile_bytecode
@@ -35,6 +36,7 @@ __all__ = ["CompiledReward", "RewardRuntimeError", "compile_reward"]
 _MAX_INSTRUCTIONS: Final = 10_000
 _MAX_REWARD: Final = 1_000_000.0
 type Value = float | bool | str | tuple[int, int] | dict[str, object]
+type RewardEvaluator = Callable[[dict[str, object]], float]
 
 
 class RewardRuntimeError(RuntimeError):
@@ -54,6 +56,8 @@ class CompiledReward:
     cache_key: str
     warnings: tuple[str, ...]
     bytecode: tuple[BytecodeFunction, ...]
+    reference_fast_path: bool
+    vm_evaluator: RewardEvaluator = field(repr=False, compare=False)
 
     def evaluate_reference(self, transition: dict[str, object]) -> float:
         """Evaluate the AST directly, preserving IEEE operation order."""
@@ -67,7 +71,7 @@ class CompiledReward:
         simple so AST and VM share exactly the same numeric semantics.
         """
 
-        return _evaluate_bytecode(self.bytecode, transition)
+        return self.vm_evaluator(transition)
 
     def evaluate_vm_terms(self, transition: dict[str, object]) -> tuple[float, dict[str, float]]:
         """Evaluate once and return numeric named-term contributions.
@@ -104,12 +108,18 @@ def _compile_canonical(source: str) -> CompiledReward:
     digest.update(b"\0")
     digest.update(source.encode())
     is_reference = source == canonical_source(REFERENCE_REWARD_SOURCE)
+    bytecode = compile_bytecode(program, specialize_reference=is_reference)
+    evaluator: RewardEvaluator = (
+        reference_reward_public if is_reference else partial(_evaluate_bytecode, bytecode)
+    )
     return CompiledReward(
         source,
         program,
         digest.hexdigest(),
         warnings,
-        compile_bytecode(program, specialize_reference=is_reference),
+        bytecode,
+        is_reference,
+        evaluator,
     )
 
 

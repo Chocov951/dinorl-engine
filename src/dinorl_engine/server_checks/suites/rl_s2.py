@@ -88,7 +88,7 @@ def _measure() -> dict[str, object]:
     ]
     precalculated_values = [reference_reward_public(item) for item in public]
     ast_values = [compiled.evaluate_reference(item) for item in public]
-    vm_values = [compiled.evaluate_vm(item) for item in public]
+    vm_values = [compiled.vm_evaluator(item) for item in public]
     if (
         native_values != precalculated_values
         or precalculated_values != ast_values
@@ -108,9 +108,10 @@ def _measure() -> dict[str, object]:
             reference_reward_public(item)
     native_seconds = time.perf_counter() - native_started
     vm_started = time.perf_counter()
+    vm_evaluator = compiled.vm_evaluator
     for _ in range(ITERATIONS):
         for item in public:
-            compiled.evaluate_vm(item)
+            vm_evaluator(item)
     vm_seconds = time.perf_counter() - vm_started
     overhead = (vm_seconds / native_seconds - 1.0) if native_seconds > 0 else float("inf")
     return {

@@ -6,6 +6,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
+from dinorl_engine.rl.rewards.reference import REFERENCE_REWARD_SOURCE, reference_reward_public
 from dinorl_engine.rl.rewards.runtime import RewardRuntimeError, compile_reward
 
 
@@ -44,6 +45,14 @@ def test_compiled_vm_matches_the_reference_for_terminal_and_event_rewards() -> N
     assert reward.evaluate_reference(transition) == 1.05
     assert reward.evaluate_vm(transition) == 1.05
     assert reward.cache_key == compile_reward(reward.source).cache_key
+
+
+def test_reference_reward_uses_the_closed_specialized_vm_instruction() -> None:
+    reward = compile_reward(REFERENCE_REWARD_SOURCE)
+
+    assert reward.reference_fast_path is True
+    assert reward.vm_evaluator is reference_reward_public
+    assert reward.bytecode[0].instructions[0].opcode == "REFERENCE_REWARD"
 
 
 def test_vm_preserves_boolean_short_circuit() -> None:
