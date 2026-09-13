@@ -20,6 +20,7 @@ from dinorl_engine.core.actions import Action
 from dinorl_engine.core.constants import MAP_ID, Actor
 from dinorl_engine.core.engine import DinoRLEnv
 from dinorl_engine.core.events import ActionTransition
+from dinorl_engine.core.state import PublicSnapshot
 from dinorl_engine.rl.env.canonical import canonical_to_engine_action, engine_to_canonical_action
 from dinorl_engine.rl.env.observation import (
     FEATURE_COUNT,
@@ -30,6 +31,8 @@ from dinorl_engine.rl.env.observation import (
     build_observation,
 )
 from dinorl_engine.rl.rewards.reference import reference_reward
+from dinorl_engine.rl.rewards.runtime import CompiledReward
+from dinorl_engine.rl.rewards.transition import public_reward_transition
 
 __all__ = ["DinoRLSingleAgentEnv", "IllegalActionEscapeError"]
 
@@ -63,7 +66,13 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
 
     metadata = {"render_modes": []}
 
-    def __init__(self, *, seed: int = 0, environment_index: int = 0) -> None:
+    def __init__(
+        self,
+        *,
+        seed: int = 0,
+        environment_index: int = 0,
+        reward_program: CompiledReward | None = None,
+    ) -> None:
         super().__init__()
         self._base_seed = _validate_seed(seed)
         if type(environment_index) is not int or environment_index < 0:
@@ -79,6 +88,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._engine_actions = 0
         self._total_learner_transitions = 0
         self._total_engine_actions = 0
+        self._reward_program = reward_program
         self.observation_space = gym.spaces.Dict(
             {
                 "grid": gym.spaces.Box(
@@ -223,18 +233,36 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             raise RuntimeError("reset() must be called before accessing the first actor")
         return self._first_actor
 
-    def _apply_engine_action(self, action: Action) -> ActionTransition:
+    def _apply_engine_action(
+        self, action: Action
+    ) -> tuple[ActionTransition, PublicSnapshot, tuple[bool, ...]]:
         """Apply an engine action and account for it in both action counters."""
 
+        before = self.engine.snapshot_public()
+        legal_actions = self.engine.legal_actions()
         transition = self.engine.step(action)
         self._engine_actions += 1
         self._total_engine_actions += 1
-        return transition
+        return transition, before, legal_actions
 
-    def _transition_reward(self, transition: ActionTransition) -> float:
+    def _transition_reward(
+        self, transition: ActionTransition, before: PublicSnapshot, legal_actions: tuple[bool, ...]
+    ) -> float:
         """Score one public engine transition from the learner perspective."""
 
         result = self.engine.result if self.engine.is_terminal else None
+        if self._reward_program is not None:
+            return self._reward_program.evaluate_vm(
+                public_reward_transition(
+                    before=before,
+                    after=self.engine.snapshot_public(),
+                    transition=transition,
+                    learner_actor=self._learner(),
+                    first_actor=self._first(),
+                    result=result,
+                    legal_actions=legal_actions,
+                )
+            )
         return reference_reward(transition, learner_actor=self._learner(), result=result)
 
     def _play_opponent_turn(self, *, collect_reward: bool) -> float:
@@ -248,9 +276,9 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             )
             if not isinstance(action, Action) or not legal_actions[action]:
                 raise RuntimeError("opponent controller selected an illegal action")
-            transition = self._apply_engine_action(action)
+            transition, before, legal_actions = self._apply_engine_action(action)
             if collect_reward:
-                reward += self._transition_reward(transition)
+                reward += self._transition_reward(transition, before, legal_actions)
         return reward
 
     def action_masks(self) -> NDArray[np.bool_]:
@@ -303,9 +331,9 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
                 "action is not legal according to the current action mask"
             )
         engine_action = canonical_to_engine_action(Action(action_index), self._learner())
-        transition = self._apply_engine_action(engine_action)
+        transition, before, legal_actions = self._apply_engine_action(engine_action)
         self._learner_transitions += 1
         self._total_learner_transitions += 1
-        reward = self._transition_reward(transition)
+        reward = self._transition_reward(transition, before, legal_actions)
         reward += self._play_opponent_turn(collect_reward=True)
         return self._observation(), reward, self.engine.is_terminal, False, self._info()

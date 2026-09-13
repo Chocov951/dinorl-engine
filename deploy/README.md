@@ -78,6 +78,35 @@ Importer localement l'archive produite sur le même commit. L'import crée aussi
 `benchmarks/server/RL-S1/<run_id>/decision.md`, qui fige le backend et le
 nombre d'environnements sélectionnés par le débit médian end-to-end.
 
+### Checkpoint RL-S2 — Reward DSL
+
+Après le commit RL-L4, le même virtualenv exécute `RL-S2` sur un corpus public
+fixe. La suite réalise un échauffement exclu, puis cinq répétitions ; elle
+vérifie l'égalité exacte entre l'AST, le bytecode et la récompense native, et
+calcule la médiane de surcharge de la VM. Ne pas lancer la suite depuis une
+route Flask : elle doit être exécutée dans la console sur un commit propre.
+
+```bash
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
+workon dinorl-engine-0.1.0
+pip install --no-deps -e .
+pip check
+git diff --quiet
+git diff --cached --quiet
+python -m dinorl_engine.server_checks run --suite RL-S2 --profile pythonanywhere
+```
+
+Télécharger puis importer localement l'archive produite sur le même commit :
+
+```powershell
+.venv\Scripts\python.exe -m dinorl_engine.server_checks import `
+  "$env:USERPROFILE\Downloads\server-results-RL-S2-<run_id>.tar.gz"
+```
+
+L'import crée `benchmarks/server/RL-S2/<run_id>/decision.md`. Une surcharge
+médiane strictement supérieure à 10 % est importable comme preuve, mais bloque
+RL-L5 : profiler la VM avant toute extension native.
+
 Créer les secrets hors du dépôt avec des permissions privées :
 
 ```bash

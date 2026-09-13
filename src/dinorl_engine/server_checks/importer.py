@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import statistics
 from pathlib import Path
 
 from dinorl_engine.server_checks.manifests import ArchiveValidationError, read_archive
@@ -13,6 +14,14 @@ from dinorl_engine.server_checks.suites.rl_s1 import (
     REPEATED_MEASUREMENTS,
     build_decision,
     candidate_configurations,
+)
+from dinorl_engine.server_checks.suites.rl_s2 import (
+    CORPUS_TRANSITIONS,
+    ITERATIONS,
+    MAX_OVERHEAD_RATIO,
+)
+from dinorl_engine.server_checks.suites.rl_s2 import (
+    REPEATED_MEASUREMENTS as RL_S2_REPEATED_MEASUREMENTS,
 )
 
 __all__ = ["import_archive"]
@@ -24,6 +33,14 @@ _RL_S0_CONFIGURATION = {
     "rollout_transitions": 2048,
     "epochs": 4,
     "batch_size": 256,
+}
+_RL_S2_CONFIGURATION = {
+    "warmups": 1,
+    "repetitions": RL_S2_REPEATED_MEASUREMENTS,
+    "seed": 19,
+    "corpus_transitions": CORPUS_TRANSITIONS,
+    "iterations": ITERATIONS,
+    "max_overhead_ratio": MAX_OVERHEAD_RATIO,
 }
 
 
@@ -273,6 +290,81 @@ def _validate_rl_s1_result(
     return suite, run_id
 
 
+def _validate_rl_s2_measurement(value: object, field_name: str) -> float:
+    measurement = _expect_mapping(value, field_name)
+    _require_exact_keys(
+        measurement,
+        {"ast_seconds", "native_seconds", "vm_seconds", "overhead_ratio", "transitions", "exact"},
+        field_name,
+    )
+    for key in ("ast_seconds", "native_seconds", "vm_seconds"):
+        if _expect_finite_number(measurement.get(key), f"{field_name}.{key}") <= 0:
+            raise ServerCheckError(f"server archive {field_name}.{key} must be positive")
+    overhead = _expect_finite_number(
+        measurement.get("overhead_ratio"), f"{field_name}.overhead_ratio"
+    )
+    native_seconds = _expect_finite_number(
+        measurement.get("native_seconds"), f"{field_name}.native_seconds"
+    )
+    vm_seconds = _expect_finite_number(measurement.get("vm_seconds"), f"{field_name}.vm_seconds")
+    if not math.isclose(overhead, vm_seconds / native_seconds - 1.0, rel_tol=1e-12, abs_tol=1e-12):
+        raise ServerCheckError(f"server archive {field_name}.overhead_ratio is inconsistent")
+    if measurement.get("transitions") != CORPUS_TRANSITIONS or measurement.get("exact") is not True:
+        raise ServerCheckError(f"server archive {field_name} does not prove required exact parity")
+    return overhead
+
+
+def _validate_rl_s2_result(
+    result: dict[str, object], manifest: dict[str, object], root: Path
+) -> tuple[str, str]:
+    suite, run_id = result.get("suite"), result.get("run_id")
+    if suite != "RL-S2" or not isinstance(run_id, str) or not run_id:
+        raise ServerCheckError("server archive is not an RL-S2 result with a run identifier")
+    if manifest.get("suite") != suite or manifest.get("run_id") != run_id:
+        raise ServerCheckError("server archive manifest and result identity differ")
+    _require_exact_keys(
+        result,
+        {
+            "format",
+            "suite",
+            "dependency_profile",
+            "run_id",
+            "provenance",
+            "configuration",
+            "warmup",
+            "repetitions",
+            "decision",
+        },
+        "result",
+    )
+    if result.get("format") != "dinorl-server-result-v1":
+        raise ServerCheckError("server archive result format is not supported")
+    if result.get("configuration") != _RL_S2_CONFIGURATION:
+        raise ServerCheckError("server archive RL-S2 configuration is incomplete or unexpected")
+    _verify_result_provenance(result, root)
+    _validate_rl_s2_measurement(result.get("warmup"), "warmup")
+    repetitions = result.get("repetitions")
+    if not isinstance(repetitions, list) or len(repetitions) != RL_S2_REPEATED_MEASUREMENTS:
+        raise ServerCheckError("server archive RL-S2 repetitions are incomplete")
+    overheads = [
+        _validate_rl_s2_measurement(repetition, f"repetitions[{index}]")
+        for index, repetition in enumerate(repetitions)
+    ]
+    decision = _expect_mapping(result.get("decision"), "decision")
+    _require_exact_keys(
+        decision, {"max_overhead_ratio", "median_overhead_ratio", "passed"}, "decision"
+    )
+    median_overhead = statistics.median(overheads)
+    expected_decision = {
+        "max_overhead_ratio": MAX_OVERHEAD_RATIO,
+        "median_overhead_ratio": median_overhead,
+        "passed": median_overhead <= MAX_OVERHEAD_RATIO,
+    }
+    if decision != expected_decision:
+        raise ServerCheckError("server archive RL-S2 decision does not match its measurements")
+    return suite, run_id
+
+
 def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
     """Verify then install an RL-S0 server archive under ``benchmarks/server``."""
 
@@ -286,6 +378,8 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
         suite, run_id = _validate_rl_s0_result(archive.result, archive.manifest, root)
     elif archive.result.get("suite") == "RL-S1":
         suite, run_id = _validate_rl_s1_result(archive.result, archive.manifest, root)
+    elif archive.result.get("suite") == "RL-S2":
+        suite, run_id = _validate_rl_s2_result(archive.result, archive.manifest, root)
     else:
         raise ServerCheckError("server archive suite is not supported")
     destination = root / "benchmarks" / "server" / suite / run_id
@@ -311,6 +405,17 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
             "- Median end-to-end throughput: "
             f"`{decision['median_transitions_per_second']}` transitions/s\n"
             "- Selection: highest median end-to-end throughput across the complete matrix.\n",
+            encoding="utf-8",
+        )
+    elif suite == "RL-S2":
+        decision = _expect_mapping(archive.result["decision"], "decision")
+        status = "passed" if decision["passed"] else "blocked: profile before native extension"
+        (destination / "decision.md").write_text(
+            "# RL-S2 Reward VM decision\n\n"
+            "- Exact AST/VM/native parity: `passed`\n"
+            f"- Median VM overhead: `{decision['median_overhead_ratio']}`\n"
+            f"- Maximum permitted overhead: `{decision['max_overhead_ratio']}`\n"
+            f"- Status: {status}\n",
             encoding="utf-8",
         )
     return {

@@ -12,6 +12,14 @@ from dinorl_engine.server_checks.suites.rl_s1 import (
     build_decision,
     candidate_configurations,
 )
+from dinorl_engine.server_checks.suites.rl_s2 import (
+    CORPUS_TRANSITIONS,
+    ITERATIONS,
+    MAX_OVERHEAD_RATIO,
+)
+from dinorl_engine.server_checks.suites.rl_s2 import (
+    REPEATED_MEASUREMENTS as RL_S2_REPEATED_MEASUREMENTS,
+)
 
 
 def _result(provenance: dict[str, object]) -> dict[str, object]:
@@ -152,3 +160,57 @@ def test_rl_s1_archive_imports_the_server_selected_decision(
     decision = Path(str(imported["destination"])) / "decision.md"
     assert decision.is_file()
     assert "highest median end-to-end throughput" in decision.read_text(encoding="utf-8")
+
+
+def test_rl_s2_archive_imports_a_complete_blocked_gate(tmp_path: Path, monkeypatch: object) -> None:
+    measurement = {
+        "ast_seconds": 2.0,
+        "native_seconds": 1.0,
+        "vm_seconds": 1.2,
+        "overhead_ratio": 0.2,
+        "transitions": CORPUS_TRANSITIONS,
+        "exact": True,
+    }
+    result = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S2",
+        "dependency_profile": "standard",
+        "run_id": "test-s2-run-id",
+        "provenance": {
+            "git_commit": "a" * 40,
+            "lock_sha256": {"requirements.lock": "b" * 64},
+            "installed_packages": {"torch": "2.14.0"},
+            "python": "3.12.13",
+            "platform": "test-platform",
+            "processor": "test-processor",
+            "cpu_count": 1,
+        },
+        "configuration": {
+            "warmups": 1,
+            "repetitions": RL_S2_REPEATED_MEASUREMENTS,
+            "seed": 19,
+            "corpus_transitions": CORPUS_TRANSITIONS,
+            "iterations": ITERATIONS,
+            "max_overhead_ratio": MAX_OVERHEAD_RATIO,
+        },
+        "warmup": measurement,
+        "repetitions": [measurement for _ in range(RL_S2_REPEATED_MEASUREMENTS)],
+        "decision": {
+            "max_overhead_ratio": MAX_OVERHEAD_RATIO,
+            "median_overhead_ratio": 0.2,
+            "passed": False,
+        },
+    }
+    archive_path = create_archive(
+        output_dir=tmp_path,
+        suite="RL-S2",
+        run_id="test-s2-run-id",
+        result=result,
+        summary="# RL-S2\n",
+    )
+    monkeypatch.setattr(importer, "verify_import_provenance", lambda *_args: None)  # type: ignore[attr-defined]
+
+    imported = import_archive(archive_path=archive_path, root=tmp_path / "repository")
+
+    decision = Path(str(imported["destination"])) / "decision.md"
+    assert "blocked: profile before native extension" in decision.read_text(encoding="utf-8")

@@ -10,7 +10,17 @@ from dinorl_engine.core.events import (
     DamageDealtEffect,
 )
 
-__all__ = ["reference_reward"]
+__all__ = ["REFERENCE_REWARD_SOURCE", "reference_reward", "reference_reward_public"]
+
+REFERENCE_REWARD_SOURCE = """\
+fn reward(t: Transition) -> Number {
+    return terminal_score(t, 1.0, -1.0, 0.0)
+         + 0.10 * carcass_points_gained(t, SELF)
+         - 0.10 * carcass_points_gained(t, OPPONENT)
+         + 0.05 * damage_dealt(t, SELF)
+         - 0.05 * damage_dealt(t, OPPONENT);
+}
+"""
 
 _CARCASS_POINT_REWARD = 0.10
 _DAMAGE_POINT_REWARD = 0.05
@@ -44,3 +54,35 @@ def reference_reward(
         elif isinstance(result.winner, Actor):
             reward -= 1.0
     return reward
+
+
+def reference_reward_public(transition: dict[str, object]) -> float:
+    """Evaluate the fixed V1 reward from its already-public transition values.
+
+    This is the native, precalculated control used by RL-S2.  It intentionally
+    mirrors the source term order; the specialized VM bytecode performs the
+    same reads without interpreting generic expression instructions.
+    """
+
+    events = transition.get("events")
+    if not isinstance(events, dict):
+        events = {}
+
+    def metric(name: str, actor: str) -> float:
+        values = events.get(name)
+        if not isinstance(values, dict):
+            return 0.0
+        value = values.get(actor, 0.0)
+        return (
+            float(value) if isinstance(value, int | float) and not isinstance(value, bool) else 0.0
+        )
+
+    outcome = transition.get("outcome")
+    terminal = 1.0 if outcome == "WIN" else -1.0 if outcome == "LOSS" else 0.0
+    return (
+        terminal
+        + 0.10 * metric("carcass_points_gained", "SELF")
+        - 0.10 * metric("carcass_points_gained", "OPPONENT")
+        + 0.05 * metric("damage_dealt", "SELF")
+        - 0.05 * metric("damage_dealt", "OPPONENT")
+    )

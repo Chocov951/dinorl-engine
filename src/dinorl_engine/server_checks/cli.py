@@ -40,7 +40,7 @@ def main(
     import_results.add_argument("archive", type=Path)
     import_results.add_argument("--json", action="store_true")
     run = commands.add_parser("run", help="run a server gate suite")
-    run.add_argument("--suite", required=True, choices=("RL-S0", "RL-S1"))
+    run.add_argument("--suite", required=True, choices=("RL-S0", "RL-S1", "RL-S2"))
     run.add_argument("--profile", default="standard", choices=profile_names())
     run.add_argument("--output-dir", type=Path, default=Path.cwd())
     run.add_argument("--json", action="store_true")
@@ -84,8 +84,8 @@ def main(
         if options.json:
             write(json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n")
         else:
-            write(f"run: passed ({result['archive']})\n")
-        return 0
+            write(f"run: {result['status']} ({result['archive']})\n")
+        return 0 if result["status"] == "passed" else 1
 
     try:
         result = import_archive(archive_path=options.archive, root=repository_root())

@@ -9,7 +9,7 @@ Le noyau du jeu est livré jusqu'au lot moteur L7. Les lots **RL-L0** à
 wrapper Gymnasium mono-agent avec masque d'actions, la récompense de référence
 et une unité CPU `MaskablePPO` de 2 048 transitions. RL-L3 ajoute la matrice
 vectorisée `DummyVecEnv`/`SubprocVecEnv` pour 2, 4 et 8 environnements. Les
-suites serveur `RL-S0` et `RL-S1` se lancent sur un commit propre ; leurs
+suites serveur `RL-S0`, `RL-S1` et `RL-S2` se lancent sur un commit propre ; leurs
 archives résultantes s'importent avec
 `python -m dinorl_engine.server_checks import <archive>`. La CLI d'entraînement
 générale reste déclarative jusqu'aux lots suivants.

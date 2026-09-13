@@ -7,6 +7,7 @@ import importlib
 import importlib.metadata
 import os
 import platform
+import statistics
 import subprocess
 import sys
 import uuid
@@ -31,6 +32,16 @@ from dinorl_engine.server_checks.suites.rl_s1 import (
 from dinorl_engine.server_checks.suites.rl_s1 import (
     run_with_measurement as run_s1_measurement,
 )
+from dinorl_engine.server_checks.suites.rl_s2 import (
+    CORPUS_TRANSITIONS,
+    ITERATIONS,
+    MAX_OVERHEAD_RATIO,
+)
+from dinorl_engine.server_checks.suites.rl_s2 import (
+    REPEATED_MEASUREMENTS as RL_S2_REPEATED_MEASUREMENTS,
+)
+from dinorl_engine.server_checks.suites.rl_s2 import run_measurement as run_s2_measurement
+from dinorl_engine.server_checks.suites.rl_s2 import run_warmup as run_s2_warmup
 
 __all__ = [
     "DirtyWorktreeError",
@@ -232,6 +243,8 @@ def verify_import_provenance(
 def _summary(result: dict[str, object]) -> str:
     if result["suite"] == "RL-S1":
         return _summary_rl_s1(result)
+    if result["suite"] == "RL-S2":
+        return _summary_rl_s2(result)
     repetition = result["repetitions"]
     if not isinstance(repetition, list) or len(repetition) != 1:
         raise ServerCheckError("RL-S0 must contain exactly one measured repetition")
@@ -264,6 +277,24 @@ def _summary_rl_s1(result: dict[str, object]) -> str:
         f"- Selected environments: `{decision['n_envs']}`\n"
         f"- Median throughput: `{decision['median_transitions_per_second']}` transitions/s\n"
         "- Criterion: highest median end-to-end throughput among the complete matrix\n"
+    )
+
+
+def _summary_rl_s2(result: dict[str, object]) -> str:
+    """Render a server-measured VM gate without hiding a failed threshold."""
+
+    decision = result["decision"]
+    if not isinstance(decision, dict):
+        raise ServerCheckError("RL-S2 decision has an invalid format")
+    status = "passed" if decision["passed"] else "blocked: profile before native extension"
+    return (
+        "# RL-S2 server result\n\n"
+        f"- Run: `{result['run_id']}`\n"
+        f"- Dependency profile: `{result['dependency_profile']}`\n"
+        f"- Median VM overhead: `{decision['median_overhead_ratio']}`\n"
+        f"- Maximum permitted overhead: `{decision['max_overhead_ratio']}`\n"
+        "- Exact AST/VM/native parity: passed\n"
+        f"- Status: {status}\n"
     )
 
 
@@ -329,16 +360,72 @@ def _run_rl_s1(*, profile: DependencyProfile, root: Path, output_dir: Path) -> d
     }
 
 
+def _run_rl_s2(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
+    """Measure one fixed public corpus, retaining failed-gate evidence."""
+
+    warmup = run_s2_warmup()
+    repetitions = [run_s2_measurement() for _ in range(RL_S2_REPEATED_MEASUREMENTS)]
+    overheads: list[float] = []
+    for repetition in repetitions:
+        overhead = repetition.get("overhead_ratio")
+        exact = repetition.get("exact")
+        if isinstance(overhead, bool) or not isinstance(overhead, int | float) or exact is not True:
+            raise ServerCheckError("RL-S2 produced an invalid parity measurement")
+        overheads.append(float(overhead))
+    median_overhead = statistics.median(overheads)
+    decision = {
+        "max_overhead_ratio": MAX_OVERHEAD_RATIO,
+        "median_overhead_ratio": median_overhead,
+        "passed": median_overhead <= MAX_OVERHEAD_RATIO,
+    }
+    run_id = uuid.uuid4().hex
+    result: dict[str, object] = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S2",
+        "dependency_profile": profile.name,
+        "run_id": run_id,
+        "provenance": collect_provenance(root, profile),
+        "configuration": {
+            "warmups": 1,
+            "repetitions": RL_S2_REPEATED_MEASUREMENTS,
+            "seed": 19,
+            "corpus_transitions": CORPUS_TRANSITIONS,
+            "iterations": ITERATIONS,
+            "max_overhead_ratio": MAX_OVERHEAD_RATIO,
+        },
+        "warmup": warmup,
+        "repetitions": repetitions,
+        "decision": decision,
+    }
+    archive = create_archive(
+        output_dir=output_dir,
+        suite="RL-S2",
+        run_id=run_id,
+        result=result,
+        summary=_summary(result),
+    )
+    return {
+        "archive": str(archive),
+        "archive_sha256": _sha256_file(archive),
+        "run_id": run_id,
+        "status": "passed" if decision["passed"] else "failed",
+        "suite": "RL-S2",
+        "profile": profile.name,
+    }
+
+
 def run_suite(
     *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
 ) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
-    if suite not in {"RL-S0", "RL-S1"}:
+    if suite not in {"RL-S0", "RL-S1", "RL-S2"}:
         raise ServerCheckError(f"unsupported server suite: {suite}")
     ensure_clean_tracked_worktree(root)
     if suite == "RL-S1":
         return _run_rl_s1(profile=profile, root=root, output_dir=output_dir)
+    if suite == "RL-S2":
+        return _run_rl_s2(profile=profile, root=root, output_dir=output_dir)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",
