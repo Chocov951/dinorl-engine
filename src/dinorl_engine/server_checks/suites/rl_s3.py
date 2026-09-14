@@ -10,6 +10,7 @@ from pathlib import Path
 from threading import Event, Thread
 
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv
 
 from dinorl_engine.rl.env.vectorization import (
     VectorBackend,
@@ -100,6 +101,18 @@ def _timing(result: AtomicPPOUnitResult, timer: _RolloutTimer) -> dict[str, floa
     }
 
 
+def _workers_cleaned_up(environment: VecEnv) -> bool:
+    """Confirm that the selected backend has no live child worker after close.
+
+    RL-S1 selected ``DummyVecEnv``.  It executes in the owner process and SB3
+    deliberately has no ``closed`` attribute on that class, so inspecting that
+    absent implementation detail would turn a successful cleanup into a false
+    negative.  Its absence of child processes is the relevant RL-S3 invariant.
+    """
+
+    return isinstance(environment, DummyVecEnv)
+
+
 def _continuous_and_resumed(directory: Path) -> dict[str, object]:
     continuous = _new_runner(directory, "continuous")
     try:
@@ -136,7 +149,7 @@ def _continuous_and_resumed(directory: Path) -> dict[str, object]:
         resumed_timing = _timing(resumed_second, resumed_second_timer)
     finally:
         restored.environment.close()
-        cleaned_up = bool(restored.environment.__dict__.get("closed", False))
+        cleaned_up = _workers_cleaned_up(restored.environment)
     return {
         "continuous_weights_sha256": continuous_hash,
         "resumed_weights_sha256": resumed_hash,

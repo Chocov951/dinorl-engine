@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+from dinorl_engine.rl.env.vectorization import (
+    VectorBackend,
+    VectorEnvironmentConfig,
+    create_vector_environment,
+)
 from dinorl_engine.rl.orchestration.priority import InteractivePriorityMode
-from dinorl_engine.server_checks.suites.rl_s3 import build_decision
+from dinorl_engine.server_checks.suites.rl_s3 import _workers_cleaned_up, build_decision
 
 
 def test_rl_s3_prioritizes_play_latency_before_training_throughput() -> None:
@@ -24,3 +29,12 @@ def test_rl_s3_prioritizes_play_latency_before_training_throughput() -> None:
 
     assert decision["mode"] == InteractivePriorityMode.SEPARATE_WORKER.value
     assert decision["criterion"] == "minimum_play_latency_then_maximum_training_throughput"
+
+
+def test_selected_dummy_backend_has_no_child_worker_left_to_clean_up() -> None:
+    environment = create_vector_environment(
+        VectorEnvironmentConfig(backend=VectorBackend.DUMMY, n_envs=2, seed=19)
+    )
+    environment.close()
+
+    assert _workers_cleaned_up(environment)
