@@ -30,6 +30,14 @@ from dinorl_engine.server_checks.suites.rl_s4 import (
     UNITS_PER_ARCHITECTURE,
     smoke_passed,
 )
+from dinorl_engine.server_checks.suites.rl_s5 import (
+    ARCHITECTURES as RL_S5_ARCHITECTURES,
+)
+from dinorl_engine.server_checks.suites.rl_s5 import (
+    DEVELOPMENT_SEEDS,
+    UNITS_PER_SEED,
+    comparison_passed,
+)
 
 __all__ = ["import_archive"]
 
@@ -67,6 +75,18 @@ _RL_S4_CONFIGURATION = {
     "batch_size": 256,
     "units_per_architecture": UNITS_PER_ARCHITECTURE,
     "architectures": [architecture.value for architecture in ARCHITECTURES],
+}
+_RL_S5_CONFIGURATION = {
+    "seed": SELECTED_CONFIGURATION.seed,
+    "backend": SELECTED_CONFIGURATION.backend.value,
+    "n_envs": SELECTED_CONFIGURATION.n_envs,
+    "n_steps": SELECTED_CONFIGURATION.n_steps,
+    "rollout_transitions": 2048,
+    "epochs": 4,
+    "batch_size": 256,
+    "units_per_seed": UNITS_PER_SEED,
+    "seeds": list(DEVELOPMENT_SEEDS),
+    "architectures": [architecture.value for architecture in RL_S5_ARCHITECTURES],
 }
 
 
@@ -553,6 +573,39 @@ def _validate_rl_s4_result(
     return suite, run_id
 
 
+def _validate_rl_s5_result(
+    result: dict[str, object], manifest: dict[str, object], root: Path
+) -> tuple[str, str]:
+    suite, run_id = result.get("suite"), result.get("run_id")
+    if suite != "RL-S5" or not isinstance(run_id, str) or not run_id:
+        raise ServerCheckError("server archive is not an RL-S5 result with a run identifier")
+    if manifest.get("suite") != suite or manifest.get("run_id") != run_id:
+        raise ServerCheckError("server archive manifest and result identity differ")
+    _require_exact_keys(
+        result,
+        {
+            "format",
+            "suite",
+            "dependency_profile",
+            "run_id",
+            "provenance",
+            "configuration",
+            "measurement",
+            "passed",
+        },
+        "result",
+    )
+    if result.get("format") != "dinorl-server-result-v1":
+        raise ServerCheckError("server archive result format is not supported")
+    if result.get("configuration") != _RL_S5_CONFIGURATION:
+        raise ServerCheckError("server archive RL-S5 configuration is incomplete or unexpected")
+    _verify_result_provenance(result, root)
+    expected_passed = comparison_passed(result.get("measurement"))
+    if result.get("passed") is not expected_passed:
+        raise ServerCheckError("server archive RL-S5 passed flag does not match its evidence")
+    return suite, run_id
+
+
 def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
     """Verify then install an RL-S0 server archive under ``benchmarks/server``."""
 
@@ -572,6 +625,8 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
         suite, run_id = _validate_rl_s3_result(archive.result, archive.manifest, root)
     elif archive.result.get("suite") == "RL-S4":
         suite, run_id = _validate_rl_s4_result(archive.result, archive.manifest, root)
+    elif archive.result.get("suite") == "RL-S5":
+        suite, run_id = _validate_rl_s5_result(archive.result, archive.manifest, root)
     else:
         raise ServerCheckError("server archive suite is not supported")
     destination = root / "benchmarks" / "server" / suite / run_id
@@ -631,6 +686,25 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
             f"- Status: {status}\n",
             encoding="utf-8",
         )
+    elif suite == "RL-S5":
+        measurement = _expect_mapping(archive.result["measurement"], "measurement")
+        decision = _expect_mapping(measurement["decision"], "measurement.decision")
+        status = "passed" if archive.result["passed"] is True else "failed"
+        if decision.get("status") == "selected":
+            content = (
+                "# RL-S5 architecture decision\n\n"
+                f"- Selected architecture: `{decision['architecture']}`\n"
+                "- Criteria converged: speed, wall time and final score.\n"
+                f"- Status: {status}\n"
+            )
+        else:
+            content = (
+                "# RL-S5 architecture decision\n\n"
+                "- Status: collective decision required.\n"
+                f"- Metric winners: `{decision.get('winners')}`\n"
+                "- RL-L8 must not start before an explicit user decision.\n"
+            )
+        (destination / "architecture-decision.md").write_text(content, encoding="utf-8")
     return {
         "archive_sha256": archive.sha256,
         "destination": str(destination),

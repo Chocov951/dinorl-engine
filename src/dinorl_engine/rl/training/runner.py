@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import time
 import uuid
 from collections.abc import Callable, Mapping
@@ -257,6 +258,18 @@ class AtomicRecoveryStore:
         if not records:
             return None
         return max(records, key=lambda record: (record.sequence, record.unit_id))
+
+    def discard_before(self, sequence: int) -> None:
+        """Discard verified superseded recoveries after a newer durable unit is available."""
+
+        if type(sequence) is not int or sequence <= 0:
+            raise ValueError("sequence must be a positive integer")
+        for directory in self._units.iterdir():
+            if not directory.is_dir():
+                continue
+            record = self._read_record(directory)
+            if record is not None and record.sequence < sequence:
+                shutil.rmtree(record.directory)
 
 
 def _metrics_mapping(metrics: PPOUnitMetrics) -> dict[str, object]:

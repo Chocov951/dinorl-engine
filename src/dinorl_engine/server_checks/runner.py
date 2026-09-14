@@ -57,6 +57,17 @@ from dinorl_engine.server_checks.suites.rl_s4 import (
     smoke_passed,
 )
 from dinorl_engine.server_checks.suites.rl_s4 import run_measurement as run_s4_measurement
+from dinorl_engine.server_checks.suites.rl_s5 import (
+    ARCHITECTURES as RL_S5_ARCHITECTURES,
+)
+from dinorl_engine.server_checks.suites.rl_s5 import (
+    DEVELOPMENT_SEEDS,
+    UNITS_PER_SEED,
+    comparison_passed,
+)
+from dinorl_engine.server_checks.suites.rl_s5 import (
+    run_measurement as run_s5_measurement,
+)
 
 __all__ = [
     "DirtyWorktreeError",
@@ -264,6 +275,8 @@ def _summary(result: dict[str, object]) -> str:
         return _summary_rl_s3(result)
     if result["suite"] == "RL-S4":
         return _summary_rl_s4(result)
+    if result["suite"] == "RL-S5":
+        return _summary_rl_s5(result)
     repetition = result["repetitions"]
     if not isinstance(repetition, list) or len(repetition) != 1:
         raise ServerCheckError("RL-S0 must contain exactly one measured repetition")
@@ -363,6 +376,25 @@ def _summary_rl_s4(result: dict[str, object]) -> str:
         )
     lines.append(f"- Status: {status}\n")
     return "\n".join(lines)
+
+
+def _summary_rl_s5(result: dict[str, object]) -> str:
+    measurement = result["measurement"]
+    if not isinstance(measurement, dict):
+        raise ServerCheckError("RL-S5 measurement has an invalid format")
+    decision = measurement.get("decision")
+    if not isinstance(decision, dict):
+        raise ServerCheckError("RL-S5 decision has an invalid format")
+    status = "passed" if result["passed"] else "failed"
+    return (
+        "# RL-S5 server result\n\n"
+        f"- Run: `{result['run_id']}`\n"
+        f"- Dependency profile: `{result['dependency_profile']}`\n"
+        f"- Units per architecture/seed: `{UNITS_PER_SEED}`\n"
+        f"- Development seeds: `{list(DEVELOPMENT_SEEDS)}`\n"
+        f"- Decision status: `{decision['status']}`\n"
+        f"- Status: {status}\n"
+    )
 
 
 def _run_rl_s1(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
@@ -604,12 +636,56 @@ def _run_rl_s4(*, profile: DependencyProfile, root: Path, output_dir: Path) -> d
     }
 
 
+def _run_rl_s5(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
+    """Run or resume the full six-run architecture comparison in a persistent work directory."""
+
+    measurement = run_s5_measurement(output_dir / ".rl-s5-work")
+    passed = comparison_passed(measurement)
+    run_id = uuid.uuid4().hex
+    result: dict[str, object] = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S5",
+        "dependency_profile": profile.name,
+        "run_id": run_id,
+        "provenance": collect_provenance(root, profile),
+        "configuration": {
+            "seed": SELECTED_CONFIGURATION.seed,
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "epochs": 4,
+            "batch_size": 256,
+            "units_per_seed": UNITS_PER_SEED,
+            "seeds": list(DEVELOPMENT_SEEDS),
+            "architectures": [architecture.value for architecture in RL_S5_ARCHITECTURES],
+        },
+        "measurement": measurement,
+        "passed": passed,
+    }
+    archive = create_archive(
+        output_dir=output_dir,
+        suite="RL-S5",
+        run_id=run_id,
+        result=result,
+        summary=_summary(result),
+    )
+    return {
+        "archive": str(archive),
+        "archive_sha256": _sha256_file(archive),
+        "run_id": run_id,
+        "status": "passed" if passed else "failed",
+        "suite": "RL-S5",
+        "profile": profile.name,
+    }
+
+
 def run_suite(
     *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
 ) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
-    if suite not in {"RL-S0", "RL-S1", "RL-S2", "RL-S3", "RL-S4"}:
+    if suite not in {"RL-S0", "RL-S1", "RL-S2", "RL-S3", "RL-S4", "RL-S5"}:
         raise ServerCheckError(f"unsupported server suite: {suite}")
     ensure_clean_tracked_worktree(root)
     if suite == "RL-S1":
@@ -620,6 +696,8 @@ def run_suite(
         return _run_rl_s3(profile=profile, root=root, output_dir=output_dir)
     if suite == "RL-S4":
         return _run_rl_s4(profile=profile, root=root, output_dir=output_dir)
+    if suite == "RL-S5":
+        return _run_rl_s5(profile=profile, root=root, output_dir=output_dir)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",

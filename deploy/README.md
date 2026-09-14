@@ -181,6 +181,39 @@ $archive = "$env:USERPROFILE\Downloads\server-results-RL-S4-<run_id>.tar.gz"
 L'import crée `benchmarks/server/RL-S4/<run_id>/smoke.md`. Une archive avec
 `passed: true` autorise RL-L7, mais conserve les deux architectures pour RL-S5.
 
+### Checkpoint RL-S5 — Comparaison complète des architectures
+
+`RL-S5` exécute 147 unités pour chacune des trois seeds communes et chacune des
+deux architectures. Le répertoire `.rl-s5-work` sous le dossier de résultats
+conserve les états atomiques et les rapports JSONL : relancer strictement la
+même commande reprend au dernier état validé. Ne pas supprimer ce répertoire
+avant la création de l'archive finale.
+
+```bash
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
+workon dinorl-engine-0.1.0
+pip install --no-deps -e .
+pip check
+git diff --quiet
+git diff --cached --quiet
+mkdir -p /home/DinoRL/server-results
+python -m dinorl_engine.server_checks run \
+  --suite RL-S5 \
+  --profile pythonanywhere \
+  --output-dir /home/DinoRL/server-results \
+  --json
+```
+
+Après téléchargement, importer l'archive sur le même commit :
+
+```powershell
+$archive = "$env:USERPROFILE\Downloads\server-results-RL-S5-<run_id>.tar.gz"
+.venv\Scripts\python.exe -m dinorl_engine.server_checks import "$archive"
+```
+
+L'import crée `architecture-decision.md`. Si le document indique
+`collective decision required`, RL-L8 est bloqué jusqu'à ton choix explicite.
+
 Créer les secrets hors du dépôt avec des permissions privées :
 
 ```bash

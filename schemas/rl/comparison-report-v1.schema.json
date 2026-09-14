@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/comparison-report-v1.schema.json",
+  "title": "DinoRL architecture comparison report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "architecture", "seed", "cycles", "evaluations", "final_score", "inference_seconds"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},
+    "architecture": {"enum": ["mlp-v1", "small-cnn-v1"]},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "cycles": {"type": "integer", "minimum": 0},
+    "evaluations": {"type": "integer", "minimum": 0},
+    "final_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "inference_seconds": {"type": "number", "minimum": 0}
+  }
+}
