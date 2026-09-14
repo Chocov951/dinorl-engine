@@ -23,8 +23,12 @@ class EvaluationGameSpec:
 def derive_evaluation_seed(seed: int, *, suite: str, opponent_id: str, index: int) -> int:
     """Derive a stable engine seed without Python's process-randomized hash."""
 
-    if type(seed) is not int or not 0 <= seed <= 2**32 - 1:
-        raise ValueError("seed must be an unsigned 32-bit integer")
+    # Top-level suite seeds are unsigned 32-bit values, while the stable game
+    # identities derived below occupy the non-negative signed 63-bit range.
+    # A game seed can legitimately be used again to derive an isolated policy
+    # sampling stream for that same game.
+    if type(seed) is not int or not 0 <= seed < 2**63:
+        raise ValueError("seed must be a non-negative signed 63-bit integer")
     if not suite or not opponent_id or type(index) is not int or index < 0:
         raise ValueError("evaluation seed inputs are invalid")
     payload = f"dinorl/v1/evaluation/{seed}/{suite}/{opponent_id}/{index}".encode()
