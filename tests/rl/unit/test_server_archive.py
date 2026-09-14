@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import dinorl_engine.server_checks.importer as importer
+from dinorl_engine.rl.policies.factory import architecture_specification
 from dinorl_engine.server_checks.importer import import_archive
 from dinorl_engine.server_checks.manifests import create_archive, read_archive
 from dinorl_engine.server_checks.suites.rl_s1 import (
@@ -22,6 +23,7 @@ from dinorl_engine.server_checks.suites.rl_s2 import (
 )
 from dinorl_engine.server_checks.suites.rl_s3 import SELECTED_CONFIGURATION
 from dinorl_engine.server_checks.suites.rl_s3 import build_decision as build_s3_decision
+from dinorl_engine.server_checks.suites.rl_s4 import ARCHITECTURES, UNITS_PER_ARCHITECTURE
 
 
 def _result(provenance: dict[str, object]) -> dict[str, object]:
@@ -303,3 +305,79 @@ def test_rl_s3_archive_imports_the_versioned_interactive_priority_decision(
 
     decision = Path(str(imported["destination"])) / "decision.md"
     assert "separate_worker" in decision.read_text(encoding="utf-8")
+
+
+def test_rl_s4_archive_imports_a_smoke_without_an_architecture_decision(
+    tmp_path: Path, monkeypatch: object
+) -> None:
+    candidates: list[dict[str, object]] = []
+    for architecture in ARCHITECTURES:
+        specification = architecture_specification(architecture)
+        candidates.append(
+            {
+                "architecture": architecture.value,
+                "encoder_parameters": specification.encoder_parameters,
+                "policy_head_parameters": 585,
+                "value_head_parameters": 65,
+                "total_parameters": specification.encoder_parameters + 650,
+                "approximate_inference_multiply_accumulates": (
+                    specification.encoder_multiply_accumulates + 640
+                ),
+                "inference_seconds_per_observation": 0.001,
+                "units": [
+                    {
+                        "learner_transitions": 2048,
+                        "engine_actions": 3_000,
+                        "epochs": 4,
+                        "optimizer_steps": 32,
+                        "diagnostics_finite": True,
+                        "legal_actions_only": True,
+                        "training_seconds": 1.0,
+                        "checkpoint_seconds": 0.1,
+                    }
+                    for _ in range(UNITS_PER_ARCHITECTURE)
+                ],
+            }
+        )
+    result = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S4",
+        "dependency_profile": "standard",
+        "run_id": "test-s4-run-id",
+        "provenance": {
+            "git_commit": "a" * 40,
+            "lock_sha256": {"requirements.lock": "b" * 64},
+            "installed_packages": {"torch": "2.14.0"},
+            "python": "3.12.13",
+            "platform": "test-platform",
+            "processor": "test-processor",
+            "cpu_count": 1,
+        },
+        "configuration": {
+            "seed": SELECTED_CONFIGURATION.seed,
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "epochs": 4,
+            "batch_size": 256,
+            "units_per_architecture": UNITS_PER_ARCHITECTURE,
+            "architectures": [architecture.value for architecture in ARCHITECTURES],
+        },
+        "measurement": {"candidates": candidates},
+        "passed": True,
+    }
+    archive_path = create_archive(
+        output_dir=tmp_path,
+        suite="RL-S4",
+        run_id="test-s4-run-id",
+        result=result,
+        summary="# RL-S4\n",
+    )
+    monkeypatch.setattr(importer, "verify_import_provenance", lambda *_args: None)  # type: ignore[attr-defined]
+
+    imported = import_archive(archive_path=archive_path, root=tmp_path / "repository")
+
+    destination = Path(str(imported["destination"]))
+    assert (destination / "smoke.md").is_file()
+    assert not (destination / "decision.md").exists()

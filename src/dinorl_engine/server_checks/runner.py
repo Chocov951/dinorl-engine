@@ -51,6 +51,12 @@ from dinorl_engine.server_checks.suites.rl_s3 import (
 from dinorl_engine.server_checks.suites.rl_s3 import (
     run_measurement as run_s3_measurement,
 )
+from dinorl_engine.server_checks.suites.rl_s4 import (
+    ARCHITECTURES,
+    UNITS_PER_ARCHITECTURE,
+    smoke_passed,
+)
+from dinorl_engine.server_checks.suites.rl_s4 import run_measurement as run_s4_measurement
 
 __all__ = [
     "DirtyWorktreeError",
@@ -256,6 +262,8 @@ def _summary(result: dict[str, object]) -> str:
         return _summary_rl_s2(result)
     if result["suite"] == "RL-S3":
         return _summary_rl_s3(result)
+    if result["suite"] == "RL-S4":
+        return _summary_rl_s4(result)
     repetition = result["repetitions"]
     if not isinstance(repetition, list) or len(repetition) != 1:
         raise ServerCheckError("RL-S0 must contain exactly one measured repetition")
@@ -325,6 +333,36 @@ def _summary_rl_s3(result: dict[str, object]) -> str:
         "- Selection: minimum play latency, then maximum learning throughput\n"
         f"- Status: {status}\n"
     )
+
+
+def _summary_rl_s4(result: dict[str, object]) -> str:
+    """Render the architecture smoke result without selecting either candidate."""
+
+    measurement = result["measurement"]
+    if not isinstance(measurement, dict):
+        raise ServerCheckError("RL-S4 measurement has an invalid format")
+    candidates = measurement.get("candidates")
+    if not isinstance(candidates, list):
+        raise ServerCheckError("RL-S4 candidates have an invalid format")
+    status = "passed" if result["passed"] else "failed"
+    lines = [
+        "# RL-S4 server result\n",
+        f"- Run: `{result['run_id']}`",
+        f"- Dependency profile: `{result['dependency_profile']}`",
+        f"- Units per architecture: `{UNITS_PER_ARCHITECTURE}`",
+        "- Architecture selection is deferred to RL-S5.",
+    ]
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            raise ServerCheckError("RL-S4 candidate has an invalid format")
+        lines.append(
+            "- Candidate "
+            f"`{candidate['architecture']}`: "
+            f"`{candidate['encoder_parameters']}` encoder parameters, "
+            f"`{candidate['inference_seconds_per_observation']}` seconds/observation"
+        )
+    lines.append(f"- Status: {status}\n")
+    return "\n".join(lines)
 
 
 def _run_rl_s1(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
@@ -523,12 +561,55 @@ def _run_rl_s3(*, profile: DependencyProfile, root: Path, output_dir: Path) -> d
     }
 
 
+def _run_rl_s4(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
+    """Run the fixed ten-unit smoke for both frozen architecture candidates."""
+
+    measurement = run_s4_measurement()
+    passed = smoke_passed(measurement)
+    run_id = uuid.uuid4().hex
+    result: dict[str, object] = {
+        "format": "dinorl-server-result-v1",
+        "suite": "RL-S4",
+        "dependency_profile": profile.name,
+        "run_id": run_id,
+        "provenance": collect_provenance(root, profile),
+        "configuration": {
+            "seed": SELECTED_CONFIGURATION.seed,
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "epochs": 4,
+            "batch_size": 256,
+            "units_per_architecture": UNITS_PER_ARCHITECTURE,
+            "architectures": [architecture.value for architecture in ARCHITECTURES],
+        },
+        "measurement": measurement,
+        "passed": passed,
+    }
+    archive = create_archive(
+        output_dir=output_dir,
+        suite="RL-S4",
+        run_id=run_id,
+        result=result,
+        summary=_summary(result),
+    )
+    return {
+        "archive": str(archive),
+        "archive_sha256": _sha256_file(archive),
+        "run_id": run_id,
+        "status": "passed" if passed else "failed",
+        "suite": "RL-S4",
+        "profile": profile.name,
+    }
+
+
 def run_suite(
     *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
 ) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
-    if suite not in {"RL-S0", "RL-S1", "RL-S2", "RL-S3"}:
+    if suite not in {"RL-S0", "RL-S1", "RL-S2", "RL-S3", "RL-S4"}:
         raise ServerCheckError(f"unsupported server suite: {suite}")
     ensure_clean_tracked_worktree(root)
     if suite == "RL-S1":
@@ -537,6 +618,8 @@ def run_suite(
         return _run_rl_s2(profile=profile, root=root, output_dir=output_dir)
     if suite == "RL-S3":
         return _run_rl_s3(profile=profile, root=root, output_dir=output_dir)
+    if suite == "RL-S4":
+        return _run_rl_s4(profile=profile, root=root, output_dir=output_dir)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",

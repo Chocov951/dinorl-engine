@@ -145,6 +145,42 @@ $archive = "$env:USERPROFILE\Downloads\server-results-RL-S3-<run_id>.tar.gz"
 L'import crée `benchmarks/server/RL-S3/<run_id>/decision.md`. Seule une archive
 dont `passed` est vrai autorise RL-L6 et fige le mode de priorité retenu.
 
+### Checkpoint RL-S4 — Smoke des architectures
+
+Après le commit RL-L6, `RL-S4` exécute dix unités PPO pour le MLP puis dix pour
+le petit CNN. Les deux candidats utilisent exactement la configuration retenue
+par RL-S1, la même seed et donc les mêmes flux déterministes de positions et
+d'adversaires. La suite vérifie les diagnostics finis, l'absence d'actions
+illégales, les dimensions gelées, le nombre de paramètres et le coût
+d'inférence. Les tests locaux vérifient aussi les gradients. Elle ne choisit pas
+d'architecture : cette décision appartient à RL-S5.
+
+```bash
+cd /home/DinoRL/releases/dinorl-engine-0.1.0
+workon dinorl-engine-0.1.0
+pip install --no-deps -e .
+pip check
+git diff --quiet
+git diff --cached --quiet
+mkdir -p /home/DinoRL/server-results
+python -m dinorl_engine.server_checks run \
+  --suite RL-S4 \
+  --profile pythonanywhere \
+  --output-dir /home/DinoRL/server-results \
+  --json
+```
+
+Télécharger `server-results-RL-S4-<run_id>.tar.gz`, puis l'importer localement
+sur le même commit :
+
+```powershell
+$archive = "$env:USERPROFILE\Downloads\server-results-RL-S4-<run_id>.tar.gz"
+.venv\Scripts\python.exe -m dinorl_engine.server_checks import "$archive"
+```
+
+L'import crée `benchmarks/server/RL-S4/<run_id>/smoke.md`. Une archive avec
+`passed: true` autorise RL-L7, mais conserve les deux architectures pour RL-S5.
+
 Créer les secrets hors du dépôt avec des permissions privées :
 
 ```bash

@@ -14,15 +14,15 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import VecEnv
 
 from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
-from dinorl_engine.rl.policies.mlp import DinoRLMLPFeaturesExtractor
+from dinorl_engine.rl.policies.factory import PolicyArchitecture, architecture_specification
 
 __all__ = [
     "PPO_BATCH_SIZE",
     "PPO_EPOCHS",
     "ROLLOUT_TRANSITIONS",
+    "PolicyArchitecture",
     "PPOUnitMetrics",
     "PPOUnitResult",
-    "ROLLOUT_TRANSITIONS",
     "create_maskable_ppo",
     "load_maskable_ppo",
     "save_maskable_ppo",
@@ -54,11 +54,16 @@ class PPOUnitResult:
 
 
 def create_maskable_ppo(
-    env: DinoRLSingleAgentEnv | VecEnv, *, seed: int, n_steps: int = ROLLOUT_TRANSITIONS
+    env: DinoRLSingleAgentEnv | VecEnv,
+    *,
+    seed: int,
+    n_steps: int = ROLLOUT_TRANSITIONS,
+    architecture: PolicyArchitecture = PolicyArchitecture.MLP,
 ) -> MaskablePPO:
-    """Build the fixed CPU-only V1 provisional MLP policy."""
+    """Build one fixed CPU-only PPO candidate selected by server benchmark code."""
 
     torch.set_num_threads(_TORCH_THREADS)
+    specification = architecture_specification(architecture)
     return MaskablePPO(
         MaskableMultiInputActorCriticPolicy,
         env,
@@ -77,7 +82,7 @@ def create_maskable_ppo(
         seed=seed,
         verbose=0,
         policy_kwargs={
-            "features_extractor_class": DinoRLMLPFeaturesExtractor,
+            "features_extractor_class": specification.features_extractor_class,
             "net_arch": [],
             "normalize_images": False,
         },

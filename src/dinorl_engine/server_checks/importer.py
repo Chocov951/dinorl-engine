@@ -25,6 +25,11 @@ from dinorl_engine.server_checks.suites.rl_s2 import (
 )
 from dinorl_engine.server_checks.suites.rl_s3 import SELECTED_CONFIGURATION
 from dinorl_engine.server_checks.suites.rl_s3 import build_decision as build_s3_decision
+from dinorl_engine.server_checks.suites.rl_s4 import (
+    ARCHITECTURES,
+    UNITS_PER_ARCHITECTURE,
+    smoke_passed,
+)
 
 __all__ = ["import_archive"]
 
@@ -51,6 +56,17 @@ _RL_S3_CONFIGURATION = {
     "n_steps": SELECTED_CONFIGURATION.n_steps,
     "rollout_transitions": 2048,
     "priority_modes": ["unit_boundary", "separate_worker"],
+}
+_RL_S4_CONFIGURATION = {
+    "seed": SELECTED_CONFIGURATION.seed,
+    "backend": SELECTED_CONFIGURATION.backend.value,
+    "n_envs": SELECTED_CONFIGURATION.n_envs,
+    "n_steps": SELECTED_CONFIGURATION.n_steps,
+    "rollout_transitions": 2048,
+    "epochs": 4,
+    "batch_size": 256,
+    "units_per_architecture": UNITS_PER_ARCHITECTURE,
+    "architectures": [architecture.value for architecture in ARCHITECTURES],
 }
 
 
@@ -502,6 +518,41 @@ def _validate_rl_s3_result(
     return suite, run_id
 
 
+def _validate_rl_s4_result(
+    result: dict[str, object], manifest: dict[str, object], root: Path
+) -> tuple[str, str]:
+    """Accept only a complete, comparable RL-S4 smoke archive."""
+
+    suite, run_id = result.get("suite"), result.get("run_id")
+    if suite != "RL-S4" or not isinstance(run_id, str) or not run_id:
+        raise ServerCheckError("server archive is not an RL-S4 result with a run identifier")
+    if manifest.get("suite") != suite or manifest.get("run_id") != run_id:
+        raise ServerCheckError("server archive manifest and result identity differ")
+    _require_exact_keys(
+        result,
+        {
+            "format",
+            "suite",
+            "dependency_profile",
+            "run_id",
+            "provenance",
+            "configuration",
+            "measurement",
+            "passed",
+        },
+        "result",
+    )
+    if result.get("format") != "dinorl-server-result-v1":
+        raise ServerCheckError("server archive result format is not supported")
+    if result.get("configuration") != _RL_S4_CONFIGURATION:
+        raise ServerCheckError("server archive RL-S4 configuration is incomplete or unexpected")
+    _verify_result_provenance(result, root)
+    expected_passed = smoke_passed(result.get("measurement"))
+    if result.get("passed") is not expected_passed:
+        raise ServerCheckError("server archive RL-S4 passed flag does not match its evidence")
+    return suite, run_id
+
+
 def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
     """Verify then install an RL-S0 server archive under ``benchmarks/server``."""
 
@@ -519,6 +570,8 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
         suite, run_id = _validate_rl_s2_result(archive.result, archive.manifest, root)
     elif archive.result.get("suite") == "RL-S3":
         suite, run_id = _validate_rl_s3_result(archive.result, archive.manifest, root)
+    elif archive.result.get("suite") == "RL-S4":
+        suite, run_id = _validate_rl_s4_result(archive.result, archive.manifest, root)
     else:
         raise ServerCheckError("server archive suite is not supported")
     destination = root / "benchmarks" / "server" / suite / run_id
@@ -565,6 +618,16 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
             f"- Mode: `{decision['mode']}`\n"
             f"- Play latency: `{decision['play_latency_seconds']}` seconds\n"
             "- Selection: minimum play latency, then maximum learning throughput.\n"
+            f"- Status: {status}\n",
+            encoding="utf-8",
+        )
+    elif suite == "RL-S4":
+        status = "passed" if archive.result["passed"] is True else "failed"
+        (destination / "smoke.md").write_text(
+            "# RL-S4 architecture smoke\n\n"
+            f"- Units per architecture: `{UNITS_PER_ARCHITECTURE}`\n"
+            "- Both MLP and small CNN use the same seed and PPO budget.\n"
+            "- No architecture is selected at this checkpoint; selection is deferred to RL-S5.\n"
             f"- Status: {status}\n",
             encoding="utf-8",
         )

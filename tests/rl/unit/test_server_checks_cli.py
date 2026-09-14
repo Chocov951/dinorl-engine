@@ -127,3 +127,15 @@ def test_rl_s3_is_selectable_for_a_server_gate() -> None:
         assert main(["run", "--suite", "RL-S3", "--json"], output=output.append) == 1
 
     assert json.loads("".join(output))["suite"] == "RL-S3"
+
+
+def test_rl_s4_is_selectable_for_a_server_gate() -> None:
+    output: list[str] = []
+
+    with patch(
+        "dinorl_engine.server_checks.cli.run_suite",
+        side_effect=DirtyWorktreeError("tracked_worktree_dirty"),
+    ):
+        assert main(["run", "--suite", "RL-S4", "--json"], output=output.append) == 1
+
+    assert json.loads("".join(output))["suite"] == "RL-S4"
