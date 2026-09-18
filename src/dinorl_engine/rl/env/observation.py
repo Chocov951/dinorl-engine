@@ -126,7 +126,7 @@ def _bounded_fraction(value: int, denominator: int, field_name: str) -> float:
 
 
 def _build_features(
-    snapshot: PublicSnapshot, learner_actor: Actor, first_actor: Actor
+    snapshot: PublicSnapshot, learner_actor: Actor, first_actor: Actor, max_rounds: int
 ) -> NDArray[np.float32]:
     opponent_actor = Actor.B if learner_actor is Actor.A else Actor.A
     self_raptor = _raptor(snapshot, learner_actor)
@@ -176,7 +176,7 @@ def _build_features(
             _bool_feature(opponent.get("rest_pending")),
             float(central_status != "active"),
             central_delay,
-            _bounded_fraction(_integer(snapshot.get("round"), "round"), 30, "round"),
+            _bounded_fraction(_integer(snapshot.get("round"), "round"), max_rounds, "round"),
             float(learner_actor is first_actor),
         ),
         dtype=np.float32,
@@ -187,11 +187,14 @@ def _build_features(
 
 
 def build_observation(
-    snapshot: PublicSnapshot, *, learner_actor: Actor, first_actor: Actor
+    snapshot: PublicSnapshot, *, learner_actor: Actor, first_actor: Actor, max_rounds: int = 30
 ) -> Observation:
     """Encode a public state into the fixed observation-v1 Gymnasium dictionary."""
 
+    if type(max_rounds) is not int or max_rounds <= 0:
+        raise ValueError("max_rounds must be a positive integer")
+
     return {
         "grid": _build_grid(snapshot, learner_actor),
-        "features": _build_features(snapshot, learner_actor, first_actor),
+        "features": _build_features(snapshot, learner_actor, first_actor, max_rounds),
     }

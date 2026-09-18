@@ -20,6 +20,9 @@ Ne pas déduire de règle à partir de l'ancien DinoWars.
 - Ne jamais ajouter de secret au dépôt.
 - Préserver la séparation du noyau : `core` dépend uniquement de la bibliothèque standard.
 - Conserver un comportement déterministe et des types stricts dans `core`.
+- Tout nouveau script CLI qui exécute un calcul potentiellement long doit afficher sa
+  progression sur stderr : travail accompli/total, pourcentage et, lorsque mesurable,
+  débit et estimation du temps restant. Prévoir une option `--quiet` pour la désactiver.
 
 ## Validation
 
@@ -41,4 +44,3 @@ règles seront implémentés.
 Chaque ticket se termine avec le format imposé à la section 30.3 du plan : fichiers
 modifiés, test rouge observé, commandes et résultats, couverture, décisions, risques
 et travail restant.
-

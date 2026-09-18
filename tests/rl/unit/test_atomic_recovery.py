@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -76,3 +77,19 @@ def test_recovery_rejects_a_tampered_state_file(tmp_path: Path) -> None:
     (record.directory / "state.json").write_text('{"tampered":true}\n', encoding="utf-8")
 
     assert store.load_latest() is None
+
+
+def test_discard_before_does_not_fail_when_a_sync_client_locks_stale_recovery(
+    tmp_path: Path,
+) -> None:
+    store = AtomicRecoveryStore(tmp_path / "recovery")
+    stale = store.commit_json_state(unit_id="unit-1", sequence=1, state=_state(1))
+    current = store.commit_json_state(unit_id="unit-2", sequence=2, state=_state(2))
+
+    with patch("dinorl_engine.rl.training.runner.shutil.rmtree", side_effect=PermissionError):
+        store.discard_before(2)
+
+    assert stale.directory.is_dir()
+    latest = store.load_latest()
+    assert latest is not None
+    assert latest.directory == current.directory

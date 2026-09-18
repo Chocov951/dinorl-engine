@@ -19,6 +19,67 @@ Torch fourni par la plateforme dans un virtualenv créé avec
 `--system-site-packages`. Il s'exécute avec
 `python -m dinorl_engine.server_checks run --suite RL-Sx --profile pythonanywhere`.
 
+## Diagnostic local RL-S5
+
+La comparaison complète RL-S5 peut être lancée localement pour diagnostiquer
+les architectures, avec reprise et progression visuelle :
+
+```powershell
+.venv\Scripts\python.exe -m dinorl_engine.server_checks local-rl-s5 `
+  --output-dir "$env:USERPROFILE\Downloads\dinorl-rl-s5-local" `
+  --progress
+```
+
+Le rapport `rl-s5-local-diagnostic.json` est volontairement non importable :
+seule une mesure sur le serveur cible peut sélectionner l'architecture selon
+la spécification.
+
+La variante MLP V2 locale exclut le CNN et compare trois nouveaux MLP au
+`mlp-v1` dans un tournoi sans self-play :
+
+```powershell
+.venv\Scripts\python.exe -m dinorl_engine.server_checks local-rl-s5-v2 `
+  --output-dir "benchmarks\server\RL-S5" `
+  --progress `
+  --json
+```
+
+Elle réutilise les checkpoints finaux de `.rl-s5-local-work`, reprend ses
+propres entraînements dans `.rl-s5-v2-local-work` et écrit
+`rl-s5-v2-local-diagnostic.json`.
+
+## RL-S5b — checkpoint serveur A
+
+Après que les douze checkpoints RL-S5 sont disponibles, le protocole RL-S5b
+fige leur hash dans un pool, puis exécute la matrice stochastique appariée. La
+configuration versionnée est [configs/rl/s5b.yaml](configs/rl/s5b.yaml) ; elle
+est écrite en JSON, qui est un sous-ensemble valide de YAML, pour ne pas
+ajouter de dépendance au serveur.
+
+Sur le serveur, depuis la racine du dépôt :
+
+```bash
+python -m dinorl_engine.rl s5b freeze-pool --config configs/rl/s5b.yaml --json
+# Reprendre avec le chemin `pool` retourné :
+python -m dinorl_engine.rl s5b cross-evaluate \
+  --pool artifacts/rl/s5b/rl-s5b-default/pools/<pool_sha256>.json --json
+python -m dinorl_engine.rl s5b archive \
+  --run artifacts/rl/s5b/rl-s5b-default \
+  --output-dir . --json
+```
+
+`cross-evaluate` reprend chaque paire/seed terminée sans la rejouer. Il produit
+`crossplay.json`, `crossplay.csv`, `crossplay-report.md` et le manifeste de
+campagne, sans modifier les poids. L’archive `server-results-RL-S5b-A-*.tar.gz`
+ne contient aucun poids et s’importe localement avec :
+
+```powershell
+.venv\Scripts\python.exe -m dinorl_engine.server_checks import "<archive>.tar.gz"
+```
+
+Ne pas lancer `s5b continue`, `s5b self-play` ou `s5b train-exploiters` avant
+l’import et l’analyse du checkpoint serveur A.
+
 ## Contrats RL
 
 Les schémas machine v1 se trouvent dans [`schemas/rl/`](schemas/rl/) :

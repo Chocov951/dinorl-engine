@@ -1,0 +1,22 @@
+{
+  "format": "dinorl-s5b-config-v1",
+  "run_id": "rl-s5b-default",
+  "output_directory": "../../artifacts/rl/s5b/rl-s5b-default",
+  "checkpoints": [
+    {"id": "mlp-v1-s19", "architecture": "mlp-v1", "seed": 19, "directory": "../../benchmarks/server/RL-S5/.rl-s5-local-work/mlp-v1-19/recovery/units/unit-147"},
+    {"id": "mlp-v1-s20", "architecture": "mlp-v1", "seed": 20, "directory": "../../benchmarks/server/RL-S5/.rl-s5-local-work/mlp-v1-20/recovery/units/unit-147"},
+    {"id": "mlp-v1-s21", "architecture": "mlp-v1", "seed": 21, "directory": "../../benchmarks/server/RL-S5/.rl-s5-local-work/mlp-v1-21/recovery/units/unit-147"},
+    {"id": "mlp-compact-v2-s19", "architecture": "mlp-compact-v2", "seed": 19, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-compact-v2-19/recovery/units/unit-147"},
+    {"id": "mlp-compact-v2-s20", "architecture": "mlp-compact-v2", "seed": 20, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-compact-v2-20/recovery/units/unit-147"},
+    {"id": "mlp-compact-v2-s21", "architecture": "mlp-compact-v2", "seed": 21, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-compact-v2-21/recovery/units/unit-147"},
+    {"id": "mlp-balanced-v2-s19", "architecture": "mlp-balanced-v2", "seed": 19, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-balanced-v2-19/recovery/units/unit-147"},
+    {"id": "mlp-balanced-v2-s20", "architecture": "mlp-balanced-v2", "seed": 20, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-balanced-v2-20/recovery/units/unit-147"},
+    {"id": "mlp-balanced-v2-s21", "architecture": "mlp-balanced-v2", "seed": 21, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-balanced-v2-21/recovery/units/unit-147"},
+    {"id": "mlp-deep-v2-s19", "architecture": "mlp-deep-v2", "seed": 19, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-deep-v2-19/recovery/units/unit-147"},
+    {"id": "mlp-deep-v2-s20", "architecture": "mlp-deep-v2", "seed": 20, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-deep-v2-20/recovery/units/unit-147"},
+    {"id": "mlp-deep-v2-s21", "architecture": "mlp-deep-v2", "seed": 21, "directory": "../../benchmarks/server/RL-S5/.rl-s5-v2-local-work/mlp-deep-v2-21/recovery/units/unit-147"}
+  ],
+  "final_architectures": ["mlp-compact-v2", "mlp-deep-v2"],
+  "confrontations": 100,
+  "evaluation_seeds": [19, 20, 21]
+}

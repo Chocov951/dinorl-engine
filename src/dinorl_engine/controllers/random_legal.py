@@ -35,3 +35,38 @@ class RandomLegalController:
         if not choices:
             raise ValueError("legal_actions must contain at least one action")
         return self._random.choice(choices)
+
+    def export_recovery_state(self) -> dict[str, object]:
+        """Expose the isolated stream needed by an exact interrupted RL run."""
+
+        version, internal, gaussian = self._random.getstate()
+        return {
+            "format": "random-legal-recovery-v1",
+            "gaussian": gaussian,
+            "internal": list(internal),
+            "version": version,
+        }
+
+    def restore_recovery_state(self, state: object) -> None:
+        """Restore a state emitted by :meth:`export_recovery_state`."""
+
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"format", "gaussian", "internal", "version"}
+            or state.get("format") != "random-legal-recovery-v1"
+            or type(state.get("version")) is not int
+            or not isinstance(state.get("internal"), list)
+            or not all(type(value) is int for value in state["internal"])
+            or (
+                state.get("gaussian") is not None
+                and (
+                    isinstance(state.get("gaussian"), bool)
+                    or not isinstance(state.get("gaussian"), float)
+                )
+            )
+        ):
+            raise ValueError("random-legal recovery state is invalid")
+        try:
+            self._random.setstate((state["version"], tuple(state["internal"]), state["gaussian"]))
+        except ValueError as error:
+            raise ValueError("random-legal recovery state cannot be restored") from error

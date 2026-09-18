@@ -260,7 +260,13 @@ class AtomicRecoveryStore:
         return max(records, key=lambda record: (record.sequence, record.unit_id))
 
     def discard_before(self, sequence: int) -> None:
-        """Discard verified superseded recoveries after a newer durable unit is available."""
+        """Best-effort removal of recoveries superseded by a durable newer unit.
+
+        Recovery correctness must not depend on this housekeeping step.  In
+        particular, a synchronisation client may momentarily hold an old
+        checkpoint open on Windows after the subsequent unit has already been
+        committed and billed.
+        """
 
         if type(sequence) is not int or sequence <= 0:
             raise ValueError("sequence must be a positive integer")
@@ -269,7 +275,12 @@ class AtomicRecoveryStore:
                 continue
             record = self._read_record(directory)
             if record is not None and record.sequence < sequence:
-                shutil.rmtree(record.directory)
+                try:
+                    shutil.rmtree(record.directory)
+                except OSError:
+                    # The newest verified recovery remains available.  Leave
+                    # a locked stale directory for a later cleanup attempt.
+                    continue
 
 
 def _metrics_mapping(metrics: PPOUnitMetrics) -> dict[str, object]:
@@ -279,33 +290,53 @@ def _metrics_mapping(metrics: PPOUnitMetrics) -> dict[str, object]:
         "epochs": metrics.epochs,
         "optimizer_steps": metrics.optimizer_steps,
         "diagnostics": metrics.diagnostics,
+        "role_counts": metrics.role_counts,
     }
 
 
 def _metrics_from_mapping(value: object) -> PPOUnitMetrics:
-    if not isinstance(value, dict) or set(value) != {
-        "learner_transitions",
-        "engine_actions",
-        "epochs",
-        "optimizer_steps",
-        "diagnostics",
-    }:
+    if not isinstance(value, dict) or set(value) not in (
+        {
+            "learner_transitions",
+            "engine_actions",
+            "epochs",
+            "optimizer_steps",
+            "diagnostics",
+        },
+        {
+            "learner_transitions",
+            "engine_actions",
+            "epochs",
+            "optimizer_steps",
+            "diagnostics",
+            "role_counts",
+        },
+    ):
         raise ValueError("PPO recovery metrics have unexpected fields")
     integer_names = ("learner_transitions", "engine_actions", "epochs", "optimizer_steps")
     if any(type(value[name]) is not int or value[name] < 0 for name in integer_names):
         raise ValueError("PPO recovery metrics contain invalid counters")
     diagnostics = value["diagnostics"]
+    role_counts = value.get("role_counts", {})
     if not isinstance(diagnostics, dict) or any(
         not isinstance(key, str) or isinstance(number, bool) or not isinstance(number, int | float)
         for key, number in diagnostics.items()
     ):
         raise ValueError("PPO recovery diagnostics are invalid")
+    expected_roles = {"learner_first", "learner_second", "learner_a", "learner_b"}
+    if (
+        not isinstance(role_counts, dict)
+        or set(role_counts) not in (set(), expected_roles)
+        or any(type(number) is not int or number < 0 for number in role_counts.values())
+    ):
+        raise ValueError("PPO recovery role counters are invalid")
     return PPOUnitMetrics(
         learner_transitions=value["learner_transitions"],
         engine_actions=value["engine_actions"],
         epochs=value["epochs"],
         optimizer_steps=value["optimizer_steps"],
         diagnostics={key: float(number) for key, number in diagnostics.items()},
+        role_counts={key: int(number) for key, number in role_counts.items()},
     )
 
 
@@ -368,6 +399,7 @@ class AtomicPPOUnitRunner:
         environment: VecEnv,
         recovery_store: AtomicRecoveryStore,
         ledger: UnitLedger,
+        recovery_metadata: Mapping[str, object] | None = None,
     ) -> None:
         if configuration.backend is not VectorBackend.DUMMY:
             raise ValueError("RL-L5 exact recovery requires the selected DummyVecEnv backend")
@@ -379,6 +411,7 @@ class AtomicPPOUnitRunner:
         self._environment = environment
         self._store = recovery_store
         self._ledger = ledger
+        self._recovery_metadata = None if recovery_metadata is None else dict(recovery_metadata)
 
     def run_unit(
         self,
@@ -405,6 +438,8 @@ class AtomicPPOUnitRunner:
             "environments": export_vector_recovery_state(self._environment),
             "process_rng": capture_process_rng_state(),
         }
+        if self._recovery_metadata is not None:
+            state["metadata"] = self._recovery_metadata
         checkpoint_started = time.perf_counter()
         recovery = self._store.commit_json_state(
             unit_id=unit_id,
@@ -435,6 +470,8 @@ class AtomicPPOUnitRunner:
         configuration: VectorEnvironmentConfig,
         recovery_store: AtomicRecoveryStore,
         ledger: UnitLedger,
+        environment_factory: Callable[[VectorEnvironmentConfig], VecEnv] | None = None,
+        recovery_metadata: Mapping[str, object] | None = None,
     ) -> tuple[AtomicPPOUnitRunner, PPOUnitMetrics, RecoveryRecord]:
         """Recreate the PPO/vector pair and reconcile a renamed-but-undebited unit."""
 
@@ -452,9 +489,14 @@ class AtomicPPOUnitRunner:
                 "seed": configuration.seed,
             }
             or not isinstance(state.get("environments"), list)
+            or (recovery_metadata is not None and state.get("metadata") != dict(recovery_metadata))
         ):
             raise ValueError("recovery state does not match this PPO run")
-        environment = create_vector_environment(configuration)
+        environment = (
+            create_vector_environment(configuration)
+            if environment_factory is None
+            else environment_factory(configuration)
+        )
         restore_vector_recovery_state(environment, state["environments"])
         model = load_maskable_ppo(record.directory / "model.zip", environment)
         _restore_ppo_resume_arrays(model, record.directory / "ppo_state.npz")
@@ -466,6 +508,7 @@ class AtomicPPOUnitRunner:
             environment=environment,
             recovery_store=recovery_store,
             ledger=ledger,
+            recovery_metadata=recovery_metadata,
         )
         ledger.debit_validated_unit(
             run_id=run_id,

@@ -26,15 +26,19 @@ class MaskablePolicyController:
         first_actor: Actor,
         deterministic: bool,
         stochastic_seed: int,
+        max_rounds: int = 30,
     ) -> None:
         if not isinstance(learner_actor, Actor) or not isinstance(first_actor, Actor):
             raise ValueError("learner_actor and first_actor must be Actors")
         if type(stochastic_seed) is not int or not 0 <= stochastic_seed < 2**63:
             raise ValueError("stochastic_seed must be a non-negative signed 63-bit integer")
+        if type(max_rounds) is not int or max_rounds <= 0:
+            raise ValueError("max_rounds must be a positive integer")
         self._model = model
         self._learner_actor = learner_actor
         self._first_actor = first_actor
         self._deterministic = deterministic
+        self._max_rounds = max_rounds
         generator = torch.Generator(device="cpu")
         generator.manual_seed(stochastic_seed)
         self._random_state = generator.get_state()
@@ -56,7 +60,10 @@ class MaskablePolicyController:
         """Choose one legal engine action after masked deterministic or sampled inference."""
 
         observation = build_observation(
-            state, learner_actor=self._learner_actor, first_actor=self._first_actor
+            state,
+            learner_actor=self._learner_actor,
+            first_actor=self._first_actor,
+            max_rounds=self._max_rounds,
         )
         mask = self._canonical_mask(legal_actions)
         if self._deterministic:
@@ -77,3 +84,27 @@ class MaskablePolicyController:
         if not legal_actions[int(action)]:
             raise RuntimeError("masked PPO prediction selected an illegal engine action")
         return action
+
+    def export_recovery_state(self) -> dict[str, object]:
+        """Export sampled-policy state without serialising or mutating its weights."""
+
+        return {
+            "format": "masked-policy-controller-recovery-v1",
+            "random_state": self._random_state.cpu().tolist(),
+        }
+
+    def restore_recovery_state(self, state: object) -> None:
+        """Restore the private sampled-policy stream used inside an unfinished game."""
+
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"format", "random_state"}
+            or state.get("format") != "masked-policy-controller-recovery-v1"
+            or not isinstance(state.get("random_state"), list)
+            or not all(type(value) is int and 0 <= value <= 255 for value in state["random_state"])
+        ):
+            raise ValueError("masked-policy controller recovery state is invalid")
+        restored = torch.tensor(state["random_state"], dtype=torch.uint8)
+        if restored.shape != self._random_state.shape:
+            raise ValueError("masked-policy controller recovery state has an invalid length")
+        self._random_state = restored

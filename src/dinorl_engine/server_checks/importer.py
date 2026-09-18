@@ -606,6 +606,87 @@ def _validate_rl_s5_result(
     return suite, run_id
 
 
+def _validate_rl_s5b_a_result(
+    result: dict[str, object], manifest: dict[str, object], root: Path
+) -> tuple[str, str]:
+    """Validate the light-weight evidence produced at server checkpoint RL-S5b-A."""
+
+    del root  # S5b carries its immutable pool and Git evidence in the campaign manifest.
+    suite, run_id = result.get("suite"), result.get("run_id")
+    if suite != "RL-S5b-A" or not isinstance(run_id, str) or not run_id:
+        raise ServerCheckError("server archive is not an RL-S5b-A result with a run identifier")
+    if manifest.get("suite") != suite or manifest.get("run_id") != run_id:
+        raise ServerCheckError("server archive manifest and result identity differ")
+    _require_exact_keys(result, {"campaign", "crossplay", "format", "run_id", "suite"}, "result")
+    if result.get("format") != "dinorl-s5b-server-result-v1":
+        raise ServerCheckError("server archive RL-S5b-A format is not supported")
+    campaign = _expect_mapping(result.get("campaign"), "campaign")
+    crossplay = _expect_mapping(result.get("crossplay"), "crossplay")
+    _require_exact_keys(
+        campaign,
+        {"config_sha256", "format", "git_commit", "phases", "pool_sha256", "run_id", "seeds"},
+        "campaign",
+    )
+    phases = campaign.get("phases")
+    if (
+        campaign.get("format") != "s5b-run-manifest-v1"
+        or campaign.get("run_id") != run_id
+        or not isinstance(campaign.get("pool_sha256"), str)
+        or not isinstance(phases, dict)
+    ):
+        raise ServerCheckError("server archive RL-S5b-A campaign is invalid")
+    phase = phases.get("cross-evaluate")
+    if not isinstance(phase, dict) or phase.get("status") != "completed":
+        raise ServerCheckError("server archive RL-S5b-A cross-play is incomplete")
+    records_completed = crossplay.get("records_completed")
+    games_completed = crossplay.get("games_completed")
+    if (
+        crossplay.get("format") != "s5b-crossplay-v1"
+        or crossplay.get("pool_sha256") != campaign["pool_sha256"]
+        or type(records_completed) is not int
+        or type(games_completed) is not int
+        or not isinstance(crossplay.get("records"), list)
+    ):
+        raise ServerCheckError("server archive RL-S5b-A cross-play evidence is invalid")
+    if records_completed <= 0 or games_completed <= 0:
+        raise ServerCheckError("server archive RL-S5b-A cross-play has no completed games")
+    return suite, run_id
+
+
+def _validate_rl_s5c_a_result(
+    result: dict[str, object], manifest: dict[str, object], root: Path
+) -> tuple[str, str]:
+    """Validate compact calibration evidence without importing specialist weights."""
+
+    del root
+    suite, run_id = result.get("suite"), result.get("run_id")
+    if suite != "RL-S5c-A" or not isinstance(run_id, str) or not run_id:
+        raise ServerCheckError("server archive is not an RL-S5c-A result with a run identifier")
+    if manifest.get("suite") != suite or manifest.get("run_id") != run_id:
+        raise ServerCheckError("server archive manifest and result identity differ")
+    _require_exact_keys(result, {"calibration", "campaign", "format", "run_id", "suite"}, "result")
+    if result.get("format") != "dinorl-s5c-server-result-v1":
+        raise ServerCheckError("server archive RL-S5c-A format is not supported")
+    campaign = _expect_mapping(result.get("campaign"), "campaign")
+    calibration = _expect_mapping(result.get("calibration"), "calibration")
+    if (
+        campaign.get("format") != "s5c-run-manifest-v1"
+        or campaign.get("run_id") != run_id
+        or set(calibration) != {"scavenger", "predator", "controller"}
+    ):
+        raise ServerCheckError("server archive RL-S5c-A campaign is invalid")
+    for archetype, item in calibration.items():
+        value = _expect_mapping(item, f"calibration.{archetype}")
+        if (
+            value.get("format") != "s5c-calibration-v1"
+            or value.get("archetype") != archetype
+            or not isinstance(value.get("seeds"), list)
+            or len(value["seeds"]) != 3
+        ):
+            raise ServerCheckError("server archive RL-S5c-A calibration is incomplete")
+    return suite, run_id
+
+
 def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
     """Verify then install an RL-S0 server archive under ``benchmarks/server``."""
 
@@ -627,6 +708,10 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
         suite, run_id = _validate_rl_s4_result(archive.result, archive.manifest, root)
     elif archive.result.get("suite") == "RL-S5":
         suite, run_id = _validate_rl_s5_result(archive.result, archive.manifest, root)
+    elif archive.result.get("suite") == "RL-S5b-A":
+        suite, run_id = _validate_rl_s5b_a_result(archive.result, archive.manifest, root)
+    elif archive.result.get("suite") == "RL-S5c-A":
+        suite, run_id = _validate_rl_s5c_a_result(archive.result, archive.manifest, root)
     else:
         raise ServerCheckError("server archive suite is not supported")
     destination = root / "benchmarks" / "server" / suite / run_id
@@ -705,6 +790,19 @@ def import_archive(*, archive_path: Path, root: Path) -> dict[str, object]:
                 "- RL-L8 must not start before an explicit user decision.\n"
             )
         (destination / "architecture-decision.md").write_text(content, encoding="utf-8")
+    elif suite == "RL-S5b-A":
+        crossplay = _expect_mapping(archive.result["crossplay"], "crossplay")
+        (destination / "crossplay.json").write_text(
+            json.dumps(crossplay, sort_keys=True, separators=(",", ":")) + "\n",
+            encoding="utf-8",
+        )
+        (destination / "crossplay-report.md").write_text(archive.summary, encoding="utf-8")
+    elif suite == "RL-S5c-A":
+        calibration = _expect_mapping(archive.result["calibration"], "calibration")
+        (destination / "calibration.json").write_text(
+            json.dumps(calibration, sort_keys=True, separators=(",", ":")) + "\n",
+            encoding="utf-8",
+        )
     return {
         "archive_sha256": archive.sha256,
         "destination": str(destination),

@@ -155,3 +155,43 @@ def test_illegal_action_raises_without_mutating_the_engine() -> None:
     assert env.learner_transitions == transitions_before
     assert env.engine_actions == actions_before
     assert env.engine.replay is False
+
+
+def test_round_limit_is_a_terminated_neutral_gym_transition() -> None:
+    env = DinoRLSingleAgentEnv(seed=41)
+    env.reset(options={"learner_actor": "A", "first_actor": "B"})
+    env.engine.state.turn = 59
+    env.engine.state.round = 30
+
+    _observation, reward, terminated, truncated, info = env.step(int(Action.END_TURN))
+
+    assert terminated is True
+    assert truncated is False
+    assert reward == 0.0
+    assert info["result"] == {"winner": "draw", "reason": "round_limit"}
+
+
+def test_realised_training_role_counters_follow_resets() -> None:
+    env = DinoRLSingleAgentEnv(seed=41)
+    for _ in range(7):
+        env.reset()
+
+    counts = env.training_role_counts
+    assert counts["learner_first"] + counts["learner_second"] == 7
+    assert counts["learner_a"] + counts["learner_b"] == 7
+
+
+def test_realised_training_role_counters_survive_exact_recovery() -> None:
+    env = DinoRLSingleAgentEnv(seed=41)
+    for _ in range(7):
+        env.reset()
+    recovery = env.export_recovery_state()
+
+    restored = DinoRLSingleAgentEnv(seed=0)
+    restored.restore_recovery_state(recovery)
+
+    assert restored.training_role_counts == env.training_role_counts
+    restored.reset()
+    counts = restored.training_role_counts
+    assert counts["learner_first"] + counts["learner_second"] == 8
+    assert counts["learner_a"] + counts["learner_b"] == 8

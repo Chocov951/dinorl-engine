@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dinorl_engine.core.constants import Actor
 from dinorl_engine.rl.evaluation.deterministic import deterministic_game_specs
-from dinorl_engine.rl.evaluation.protocol import derive_evaluation_seed
+from dinorl_engine.rl.evaluation.protocol import derive_evaluation_seed, derive_game_stream_seed
 from dinorl_engine.rl.evaluation.stochastic import paired_game_specs
 
 
@@ -38,3 +38,16 @@ def test_seed_derivation_accepts_a_prior_engine_seed_for_a_child_rng_stream() ->
     )
 
     assert 0 <= child_seed < 2**63
+
+
+def test_game_streams_are_keyed_by_game_identity_not_reporting_options() -> None:
+    """Counterfactual evaluations must retain their sampled-action prefix."""
+
+    first = derive_game_stream_seed("game-0001", policy_id="left")
+    repeated = derive_game_stream_seed("game-0001", policy_id="left")
+    opposite_policy = derive_game_stream_seed("game-0001", policy_id="right")
+    other_game = derive_game_stream_seed("game-0002", policy_id="left")
+
+    assert first == repeated
+    assert first != opposite_policy
+    assert first != other_game

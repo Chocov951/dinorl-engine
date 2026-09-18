@@ -189,6 +189,13 @@ conserve les états atomiques et les rapports JSONL : relancer strictement la
 même commande reprend au dernier état validé. Ne pas supprimer ce répertoire
 avant la création de l'archive finale.
 
+Le compte PythonAnywhere gratuit dispose de 100 CPU-s par jour. Les mesures
+RL-S4 importées ont mesuré environ 1,4 à 1,7 seconde par unité avant les
+évaluations ; les 882 unités de RL-S5 demandent donc au minimum environ
+1 350 CPU-s. RL-S5 ne peut pas aboutir sur ce profil gratuit dans une session
+utile. Ne pas le déplacer dans la webapp : le service WSGI ne doit jamais
+exécuter un entraînement long.
+
 ```bash
 cd /home/DinoRL/releases/dinorl-engine-0.1.0
 workon dinorl-engine-0.1.0
@@ -201,8 +208,29 @@ python -m dinorl_engine.server_checks run \
   --suite RL-S5 \
   --profile pythonanywhere \
   --output-dir /home/DinoRL/server-results \
+  --progress \
   --json
 ```
+
+`--progress` affiche une barre par unité et par seed, sur stderr lorsque
+`--json` est présent afin de conserver le JSON final lisible par un script.
+
+### Diagnostic local RL-S5
+
+Pour comparer les architectures sans consommer le quota PythonAnywhere,
+exécuter localement avec un répertoire hors du dépôt :
+
+```powershell
+.venv\Scripts\python.exe -m dinorl_engine.server_checks local-rl-s5 `
+  --output-dir "$env:USERPROFILE\Downloads\dinorl-rl-s5-local" `
+  --progress `
+  --json
+```
+
+Le répertoire `.rl-s5-local-work` reprend automatiquement après interruption.
+Le fichier `rl-s5-local-diagnostic.json` contient la comparaison, mais est
+explicitement **diagnostique seulement** : il ne se téléverse pas et ne peut
+pas être importé comme résultat serveur ni sélectionner l'architecture V1.
 
 Après téléchargement, importer l'archive sur le même commit :
 

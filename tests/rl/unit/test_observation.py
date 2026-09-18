@@ -12,6 +12,7 @@ from dinorl_engine.rl.env.observation import (
     GRID_ROWS,
     build_observation,
 )
+from dinorl_engine.rl.evaluation.policy import MaskablePolicyController
 
 
 def _initial_engine(first_actor: Actor) -> DinoRLEnv:
@@ -93,4 +94,40 @@ def test_all_scalar_encodings_stay_in_bounds_at_their_rule_extrema() -> None:
     np.testing.assert_array_equal(
         observation["features"],
         np.asarray((0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0), dtype=np.float32),
+    )
+
+
+def test_evaluation_observation_accepts_rounds_above_official_limit() -> None:
+    engine = DinoRLEnv(MAP_ID, seed=17, replay=False, max_rounds=60)
+    state = engine.reset(first_actor=Actor.A)
+    state.round = 31
+
+    observation = build_observation(
+        engine.snapshot_public(), learner_actor=Actor.A, first_actor=Actor.A, max_rounds=60
+    )
+
+    assert observation["features"][13] == np.float32(31 / 60)
+
+
+class _EndTurnModel:
+    def predict(self, *_: object, **__: object) -> tuple[np.ndarray, None]:
+        return np.asarray(8), None
+
+
+def test_policy_controller_builds_observation_past_round_thirty() -> None:
+    engine = DinoRLEnv(MAP_ID, seed=17, replay=False, max_rounds=60)
+    state = engine.reset(first_actor=Actor.A)
+    state.round = 31
+    controller = MaskablePolicyController(
+        _EndTurnModel(),
+        learner_actor=Actor.A,
+        first_actor=Actor.A,
+        deterministic=True,
+        stochastic_seed=1,
+        max_rounds=60,
+    )
+
+    assert (
+        controller.choose_action(engine.snapshot_public(), engine.legal_actions()).name
+        == "END_TURN"
     )

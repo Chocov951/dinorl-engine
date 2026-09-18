@@ -13,7 +13,8 @@ from typing import Any, Final, cast
 import gymnasium as gym
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv
 
-from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
+from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv, TrainingOpponentPool
+from dinorl_engine.rl.rewards.runtime import CompiledReward
 
 __all__ = [
     "ROLLOUT_TRANSITIONS",
@@ -72,7 +73,11 @@ def derive_environment_seed(seed: int, environment_index: int) -> int:
 
 
 def make_environment_factory(
-    seed: int, environment_index: int
+    seed: int,
+    environment_index: int,
+    *,
+    training_opponent_pool: TrainingOpponentPool | None = None,
+    reward_program: CompiledReward | None = None,
 ) -> Callable[[], DinoRLSingleAgentEnv]:
     """Create a picklable factory with a unique deterministic RNG stream."""
 
@@ -80,14 +85,29 @@ def make_environment_factory(
         DinoRLSingleAgentEnv,
         seed=derive_environment_seed(seed, environment_index),
         environment_index=environment_index,
+        training_opponent_pool=training_opponent_pool,
+        reward_program=reward_program,
     )
 
 
-def create_vector_environment(configuration: VectorEnvironmentConfig) -> VecEnv:
+def create_vector_environment(
+    configuration: VectorEnvironmentConfig,
+    *,
+    training_opponent_pool: TrainingOpponentPool | None = None,
+    reward_program: CompiledReward | None = None,
+) -> VecEnv:
     """Create one configured backend without exposing process choices to players."""
 
+    if training_opponent_pool is not None and configuration.backend is not VectorBackend.DUMMY:
+        raise ValueError("an immutable training opponent pool requires DummyVecEnv")
+
     factories = [
-        make_environment_factory(configuration.seed, environment_index)
+        make_environment_factory(
+            configuration.seed,
+            environment_index,
+            training_opponent_pool=training_opponent_pool,
+            reward_program=reward_program,
+        )
         for environment_index in range(configuration.n_envs)
     ]
     vec_factories = cast(list[Callable[[], gym.Env[Any, Any]]], factories)

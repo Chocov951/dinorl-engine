@@ -1,0 +1,3678 @@
+{
+  "artifact_root": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\artifacts\\rl\\s5b\\rl-s5b-default",
+  "continuation": {
+    "mlp-compact-v2-s19-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 76,
+          "games": 2452,
+          "losses": 1018,
+          "score": 0.5693311582381729,
+          "wins": 1358
+        },
+        "frozen_finalists": {
+          "draws": 76,
+          "games": 2400,
+          "losses": 1018,
+          "score": 0.56,
+          "wins": 1306
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 26,
+          "games": 2452,
+          "losses": 562,
+          "score": 0.7654975530179445,
+          "wins": 1864
+        },
+        "frozen_finalists": {
+          "draws": 26,
+          "games": 2400,
+          "losses": 562,
+          "score": 0.7604166666666666,
+          "wins": 1812
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 17,
+          "games": 2452,
+          "losses": 216,
+          "score": 0.908442088091354,
+          "wins": 2219
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 216,
+          "score": 0.9070833333333334,
+          "wins": 2170
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 8,
+          "games": 2452,
+          "losses": 68,
+          "score": 0.9706362153344209,
+          "wins": 2376
+        },
+        "frozen_finalists": {
+          "draws": 4,
+          "games": 2400,
+          "losses": 68,
+          "score": 0.9708333333333333,
+          "wins": 2328
+        },
+        "random_legal": {
+          "draws": 2,
+          "games": 40,
+          "losses": 0,
+          "score": 0.975,
+          "wins": 38
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 8,
+          "games": 2452,
+          "losses": 78,
+          "score": 0.966557911908646,
+          "wins": 2366
+        },
+        "frozen_finalists": {
+          "draws": 8,
+          "games": 2400,
+          "losses": 78,
+          "score": 0.9658333333333333,
+          "wins": 2314
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 12,
+          "games": 2452,
+          "losses": 56,
+          "score": 0.9747145187601958,
+          "wins": 2384
+        },
+        "frozen_finalists": {
+          "draws": 10,
+          "games": 2400,
+          "losses": 56,
+          "score": 0.9745833333333334,
+          "wins": 2334
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      }
+    },
+    "mlp-compact-v2-s19-unit-147-final-random-only": {
+      "147": {
+        "all": {
+          "draws": 48,
+          "games": 2452,
+          "losses": 978,
+          "score": 0.5913539967373572,
+          "wins": 1426
+        },
+        "frozen_finalists": {
+          "draws": 48,
+          "games": 2400,
+          "losses": 978,
+          "score": 0.5825,
+          "wins": 1374
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 4,
+          "games": 2452,
+          "losses": 936,
+          "score": 0.6174551386623165,
+          "wins": 1512
+        },
+        "frozen_finalists": {
+          "draws": 4,
+          "games": 2400,
+          "losses": 936,
+          "score": 0.6091666666666666,
+          "wins": 1460
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 6,
+          "games": 2452,
+          "losses": 996,
+          "score": 0.5925774877650897,
+          "wins": 1450
+        },
+        "frozen_finalists": {
+          "draws": 6,
+          "games": 2400,
+          "losses": 996,
+          "score": 0.58375,
+          "wins": 1398
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 4,
+          "games": 2452,
+          "losses": 990,
+          "score": 0.5954323001631321,
+          "wins": 1458
+        },
+        "frozen_finalists": {
+          "draws": 4,
+          "games": 2400,
+          "losses": 990,
+          "score": 0.5866666666666667,
+          "wins": 1406
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 24,
+          "games": 2452,
+          "losses": 1068,
+          "score": 0.5595432300163132,
+          "wins": 1360
+        },
+        "frozen_finalists": {
+          "draws": 24,
+          "games": 2400,
+          "losses": 1068,
+          "score": 0.55,
+          "wins": 1308
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 14,
+          "games": 2452,
+          "losses": 1056,
+          "score": 0.5664763458401305,
+          "wins": 1382
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 1056,
+          "score": 0.5570833333333334,
+          "wins": 1330
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-compact-v2-s20-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 159,
+          "games": 2452,
+          "losses": 1112,
+          "score": 0.5140701468189234,
+          "wins": 1181
+        },
+        "frozen_finalists": {
+          "draws": 158,
+          "games": 2400,
+          "losses": 1112,
+          "score": 0.50375,
+          "wins": 1130
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 76,
+          "games": 2452,
+          "losses": 602,
+          "score": 0.7389885807504079,
+          "wins": 1774
+        },
+        "frozen_finalists": {
+          "draws": 76,
+          "games": 2400,
+          "losses": 602,
+          "score": 0.7333333333333333,
+          "wins": 1722
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 58,
+          "games": 2452,
+          "losses": 438,
+          "score": 0.8095432300163132,
+          "wins": 1956
+        },
+        "frozen_finalists": {
+          "draws": 58,
+          "games": 2400,
+          "losses": 438,
+          "score": 0.8054166666666667,
+          "wins": 1904
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 70,
+          "games": 2452,
+          "losses": 280,
+          "score": 0.8715334420880914,
+          "wins": 2102
+        },
+        "frozen_finalists": {
+          "draws": 70,
+          "games": 2400,
+          "losses": 280,
+          "score": 0.86875,
+          "wins": 2050
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 14,
+          "games": 2452,
+          "losses": 196,
+          "score": 0.91721044045677,
+          "wins": 2242
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 196,
+          "score": 0.9154166666666667,
+          "wins": 2190
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 5,
+          "games": 2452,
+          "losses": 110,
+          "score": 0.9541190864600326,
+          "wins": 2337
+        },
+        "frozen_finalists": {
+          "draws": 2,
+          "games": 2400,
+          "losses": 110,
+          "score": 0.95375,
+          "wins": 2288
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      }
+    },
+    "mlp-compact-v2-s21-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 346,
+          "games": 2452,
+          "losses": 889,
+          "score": 0.566884176182708,
+          "wins": 1217
+        },
+        "frozen_finalists": {
+          "draws": 346,
+          "games": 2400,
+          "losses": 888,
+          "score": 0.5579166666666666,
+          "wins": 1166
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 1,
+          "score": 0.975,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 99,
+          "games": 2452,
+          "losses": 512,
+          "score": 0.7710032626427407,
+          "wins": 1841
+        },
+        "frozen_finalists": {
+          "draws": 98,
+          "games": 2400,
+          "losses": 512,
+          "score": 0.76625,
+          "wins": 1790
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 127,
+          "games": 2452,
+          "losses": 476,
+          "score": 0.7799755301794453,
+          "wins": 1849
+        },
+        "frozen_finalists": {
+          "draws": 124,
+          "games": 2400,
+          "losses": 476,
+          "score": 0.7758333333333334,
+          "wins": 1800
+        },
+        "random_legal": {
+          "draws": 3,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9625,
+          "wins": 37
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 56,
+          "games": 2452,
+          "losses": 436,
+          "score": 0.8107667210440457,
+          "wins": 1960
+        },
+        "frozen_finalists": {
+          "draws": 56,
+          "games": 2400,
+          "losses": 436,
+          "score": 0.8066666666666666,
+          "wins": 1908
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 20,
+          "games": 2452,
+          "losses": 462,
+          "score": 0.8075040783034257,
+          "wins": 1970
+        },
+        "frozen_finalists": {
+          "draws": 20,
+          "games": 2400,
+          "losses": 462,
+          "score": 0.8033333333333333,
+          "wins": 1918
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 16,
+          "games": 2452,
+          "losses": 396,
+          "score": 0.835236541598695,
+          "wins": 2040
+        },
+        "frozen_finalists": {
+          "draws": 16,
+          "games": 2400,
+          "losses": 396,
+          "score": 0.8316666666666667,
+          "wins": 1988
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-deep-v2-s19-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 93,
+          "games": 2452,
+          "losses": 1990,
+          "score": 0.16945350734094616,
+          "wins": 369
+        },
+        "frozen_finalists": {
+          "draws": 56,
+          "games": 2400,
+          "losses": 1990,
+          "score": 0.15916666666666668,
+          "wins": 354
+        },
+        "random_legal": {
+          "draws": 37,
+          "games": 40,
+          "losses": 0,
+          "score": 0.5375,
+          "wins": 3
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 385,
+          "games": 2452,
+          "losses": 762,
+          "score": 0.6107259380097879,
+          "wins": 1305
+        },
+        "frozen_finalists": {
+          "draws": 374,
+          "games": 2400,
+          "losses": 762,
+          "score": 0.6045833333333334,
+          "wins": 1264
+        },
+        "random_legal": {
+          "draws": 11,
+          "games": 40,
+          "losses": 0,
+          "score": 0.8625,
+          "wins": 29
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 437,
+          "games": 2452,
+          "losses": 196,
+          "score": 0.8309543230016313,
+          "wins": 1819
+        },
+        "frozen_finalists": {
+          "draws": 428,
+          "games": 2400,
+          "losses": 196,
+          "score": 0.8291666666666667,
+          "wins": 1776
+        },
+        "random_legal": {
+          "draws": 9,
+          "games": 40,
+          "losses": 0,
+          "score": 0.8875,
+          "wins": 31
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 167,
+          "games": 2452,
+          "losses": 390,
+          "score": 0.8068923327895595,
+          "wins": 1895
+        },
+        "frozen_finalists": {
+          "draws": 166,
+          "games": 2400,
+          "losses": 390,
+          "score": 0.8029166666666666,
+          "wins": 1844
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 52,
+          "games": 2452,
+          "losses": 506,
+          "score": 0.7830342577487766,
+          "wins": 1894
+        },
+        "frozen_finalists": {
+          "draws": 52,
+          "games": 2400,
+          "losses": 506,
+          "score": 0.7783333333333333,
+          "wins": 1842
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 36,
+          "games": 2452,
+          "losses": 492,
+          "score": 0.7920065252854812,
+          "wins": 1924
+        },
+        "frozen_finalists": {
+          "draws": 36,
+          "games": 2400,
+          "losses": 492,
+          "score": 0.7875,
+          "wins": 1872
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-deep-v2-s20-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 32,
+          "games": 2452,
+          "losses": 646,
+          "score": 0.7300163132137031,
+          "wins": 1774
+        },
+        "frozen_finalists": {
+          "draws": 32,
+          "games": 2400,
+          "losses": 646,
+          "score": 0.7241666666666666,
+          "wins": 1722
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 58,
+          "games": 2452,
+          "losses": 298,
+          "score": 0.8666394779771615,
+          "wins": 2096
+        },
+        "frozen_finalists": {
+          "draws": 58,
+          "games": 2400,
+          "losses": 298,
+          "score": 0.86375,
+          "wins": 2044
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 2,
+          "games": 2452,
+          "losses": 84,
+          "score": 0.9653344208809136,
+          "wins": 2366
+        },
+        "frozen_finalists": {
+          "draws": 2,
+          "games": 2400,
+          "losses": 84,
+          "score": 0.9645833333333333,
+          "wins": 2314
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 0,
+          "games": 2452,
+          "losses": 32,
+          "score": 0.9869494290375204,
+          "wins": 2420
+        },
+        "frozen_finalists": {
+          "draws": 0,
+          "games": 2400,
+          "losses": 32,
+          "score": 0.9866666666666667,
+          "wins": 2368
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 8,
+          "games": 2452,
+          "losses": 40,
+          "score": 0.9820554649265906,
+          "wins": 2404
+        },
+        "frozen_finalists": {
+          "draws": 8,
+          "games": 2400,
+          "losses": 40,
+          "score": 0.9816666666666667,
+          "wins": 2352
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 18,
+          "games": 2452,
+          "losses": 24,
+          "score": 0.986541598694943,
+          "wins": 2410
+        },
+        "frozen_finalists": {
+          "draws": 18,
+          "games": 2400,
+          "losses": 24,
+          "score": 0.98625,
+          "wins": 2358
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-deep-v2-s21-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 36,
+          "games": 2452,
+          "losses": 1330,
+          "score": 0.45024469820554647,
+          "wins": 1086
+        },
+        "frozen_finalists": {
+          "draws": 36,
+          "games": 2400,
+          "losses": 1330,
+          "score": 0.43833333333333335,
+          "wins": 1034
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 97,
+          "games": 2452,
+          "losses": 876,
+          "score": 0.6229608482871125,
+          "wins": 1479
+        },
+        "frozen_finalists": {
+          "draws": 96,
+          "games": 2400,
+          "losses": 876,
+          "score": 0.615,
+          "wins": 1428
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 98,
+          "games": 2452,
+          "losses": 500,
+          "score": 0.7761011419249593,
+          "wins": 1854
+        },
+        "frozen_finalists": {
+          "draws": 98,
+          "games": 2400,
+          "losses": 500,
+          "score": 0.77125,
+          "wins": 1802
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 22,
+          "games": 2452,
+          "losses": 512,
+          "score": 0.7867047308319739,
+          "wins": 1918
+        },
+        "frozen_finalists": {
+          "draws": 22,
+          "games": 2400,
+          "losses": 512,
+          "score": 0.7820833333333334,
+          "wins": 1866
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 64,
+          "games": 2452,
+          "losses": 484,
+          "score": 0.7895595432300163,
+          "wins": 1904
+        },
+        "frozen_finalists": {
+          "draws": 64,
+          "games": 2400,
+          "losses": 484,
+          "score": 0.785,
+          "wins": 1852
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 30,
+          "games": 2452,
+          "losses": 418,
+          "score": 0.8234094616639478,
+          "wins": 2004
+        },
+        "frozen_finalists": {
+          "draws": 30,
+          "games": 2400,
+          "losses": 418,
+          "score": 0.8195833333333333,
+          "wins": 1952
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    }
+  },
+  "crossplay": {
+    "first_player": {
+      "architecture": {
+        "mlp-balanced-v2": {
+          "advantage_vs_neutral": -0.2276923076923077,
+          "draws": 1088,
+          "games": 23400,
+          "losses": 16484,
+          "score": 0.2723076923076923,
+          "wins": 5828
+        },
+        "mlp-compact-v2": {
+          "advantage_vs_neutral": -0.11662393162393164,
+          "draws": 1686,
+          "games": 23400,
+          "losses": 13586,
+          "score": 0.38337606837606836,
+          "wins": 8128
+        },
+        "mlp-deep-v2": {
+          "advantage_vs_neutral": -0.097008547008547,
+          "draws": 428,
+          "games": 23400,
+          "losses": 13756,
+          "score": 0.402991452991453,
+          "wins": 9216
+        },
+        "mlp-v1": {
+          "advantage_vs_neutral": -0.2066239316239316,
+          "draws": 694,
+          "games": 23400,
+          "losses": 16188,
+          "score": 0.2933760683760684,
+          "wins": 6518
+        }
+      },
+      "checkpoint": {
+        "mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.18705128205128208,
+          "draws": 626,
+          "games": 7800,
+          "losses": 5046,
+          "score": 0.3129487179487179,
+          "wins": 2128
+        },
+        "mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.2319230769230769,
+          "draws": 350,
+          "games": 7800,
+          "losses": 5534,
+          "score": 0.2680769230769231,
+          "wins": 1916
+        },
+        "mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2641025641025641,
+          "draws": 112,
+          "games": 7800,
+          "losses": 5904,
+          "score": 0.2358974358974359,
+          "wins": 1784
+        },
+        "mlp-compact-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.1798717948717949,
+          "draws": 134,
+          "games": 7800,
+          "losses": 5236,
+          "score": 0.3201282051282051,
+          "wins": 2430
+        },
+        "mlp-compact-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.08333333333333331,
+          "draws": 524,
+          "games": 7800,
+          "losses": 4288,
+          "score": 0.4166666666666667,
+          "wins": 2988
+        },
+        "mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.08666666666666667,
+          "draws": 1028,
+          "games": 7800,
+          "losses": 4062,
+          "score": 0.41333333333333333,
+          "wins": 2710
+        },
+        "mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.3073076923076923,
+          "draws": 154,
+          "games": 7800,
+          "losses": 6220,
+          "score": 0.1926923076923077,
+          "wins": 1426
+        },
+        "mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.24897435897435893,
+          "draws": 132,
+          "games": 7800,
+          "losses": 1892,
+          "score": 0.7489743589743589,
+          "wins": 5776
+        },
+        "mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2326923076923077,
+          "draws": 142,
+          "games": 7800,
+          "losses": 5644,
+          "score": 0.2673076923076923,
+          "wins": 2014
+        },
+        "mlp-v1-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.2294871794871795,
+          "draws": 356,
+          "games": 7800,
+          "losses": 5512,
+          "score": 0.2705128205128205,
+          "wins": 1932
+        },
+        "mlp-v1-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.22794871794871796,
+          "draws": 52,
+          "games": 7800,
+          "losses": 5652,
+          "score": 0.27205128205128204,
+          "wins": 2096
+        },
+        "mlp-v1-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.16243589743589743,
+          "draws": 286,
+          "games": 7800,
+          "losses": 5024,
+          "score": 0.3375641025641026,
+          "wins": 2490
+        }
+      },
+      "checkpoint_seed": {
+        "mlp-balanced-v2-s19-unit-147-final|s19": {
+          "advantage_vs_neutral": -0.18705128205128208,
+          "draws": 626,
+          "games": 7800,
+          "losses": 5046,
+          "score": 0.3129487179487179,
+          "wins": 2128
+        },
+        "mlp-balanced-v2-s20-unit-147-final|s20": {
+          "advantage_vs_neutral": -0.2319230769230769,
+          "draws": 350,
+          "games": 7800,
+          "losses": 5534,
+          "score": 0.2680769230769231,
+          "wins": 1916
+        },
+        "mlp-balanced-v2-s21-unit-147-final|s21": {
+          "advantage_vs_neutral": -0.2641025641025641,
+          "draws": 112,
+          "games": 7800,
+          "losses": 5904,
+          "score": 0.2358974358974359,
+          "wins": 1784
+        },
+        "mlp-compact-v2-s19-unit-147-final|s19": {
+          "advantage_vs_neutral": -0.1798717948717949,
+          "draws": 134,
+          "games": 7800,
+          "losses": 5236,
+          "score": 0.3201282051282051,
+          "wins": 2430
+        },
+        "mlp-compact-v2-s20-unit-147-final|s20": {
+          "advantage_vs_neutral": -0.08333333333333331,
+          "draws": 524,
+          "games": 7800,
+          "losses": 4288,
+          "score": 0.4166666666666667,
+          "wins": 2988
+        },
+        "mlp-compact-v2-s21-unit-147-final|s21": {
+          "advantage_vs_neutral": -0.08666666666666667,
+          "draws": 1028,
+          "games": 7800,
+          "losses": 4062,
+          "score": 0.41333333333333333,
+          "wins": 2710
+        },
+        "mlp-deep-v2-s19-unit-147-final|s19": {
+          "advantage_vs_neutral": -0.3073076923076923,
+          "draws": 154,
+          "games": 7800,
+          "losses": 6220,
+          "score": 0.1926923076923077,
+          "wins": 1426
+        },
+        "mlp-deep-v2-s20-unit-147-final|s20": {
+          "advantage_vs_neutral": 0.24897435897435893,
+          "draws": 132,
+          "games": 7800,
+          "losses": 1892,
+          "score": 0.7489743589743589,
+          "wins": 5776
+        },
+        "mlp-deep-v2-s21-unit-147-final|s21": {
+          "advantage_vs_neutral": -0.2326923076923077,
+          "draws": 142,
+          "games": 7800,
+          "losses": 5644,
+          "score": 0.2673076923076923,
+          "wins": 2014
+        },
+        "mlp-v1-s19-unit-147-final|s19": {
+          "advantage_vs_neutral": -0.2294871794871795,
+          "draws": 356,
+          "games": 7800,
+          "losses": 5512,
+          "score": 0.2705128205128205,
+          "wins": 1932
+        },
+        "mlp-v1-s20-unit-147-final|s20": {
+          "advantage_vs_neutral": -0.22794871794871796,
+          "draws": 52,
+          "games": 7800,
+          "losses": 5652,
+          "score": 0.27205128205128204,
+          "wins": 2096
+        },
+        "mlp-v1-s21-unit-147-final|s21": {
+          "advantage_vs_neutral": -0.16243589743589743,
+          "draws": 286,
+          "games": 7800,
+          "losses": 5024,
+          "score": 0.3375641025641026,
+          "wins": 2490
+        }
+      },
+      "evaluation_seed": {
+        "19": {
+          "advantage_vs_neutral": -0.16278846153846155,
+          "draws": 1294,
+          "games": 31200,
+          "losses": 20032,
+          "score": 0.33721153846153845,
+          "wins": 9874
+        },
+        "20": {
+          "advantage_vs_neutral": -0.15971153846153846,
+          "draws": 1322,
+          "games": 31200,
+          "losses": 19922,
+          "score": 0.34028846153846154,
+          "wins": 9956
+        },
+        "21": {
+          "advantage_vs_neutral": -0.16346153846153844,
+          "draws": 1280,
+          "games": 31200,
+          "losses": 20060,
+          "score": 0.33653846153846156,
+          "wins": 9860
+        }
+      },
+      "global": {
+        "advantage_vs_neutral": -0.1619871794871795,
+        "draws": 3896,
+        "games": 93600,
+        "losses": 60014,
+        "score": 0.3380128205128205,
+        "wins": 29690
+      },
+      "matchup": {
+        "mlp-balanced-v2-s19-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.26916666666666667,
+          "draws": 74,
+          "games": 1200,
+          "losses": 886,
+          "score": 0.23083333333333333,
+          "wins": 240
+        },
+        "mlp-balanced-v2-s19-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.27,
+          "draws": 28,
+          "games": 1200,
+          "losses": 910,
+          "score": 0.23,
+          "wins": 262
+        },
+        "mlp-balanced-v2-s19-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2925,
+          "draws": 42,
+          "games": 1200,
+          "losses": 930,
+          "score": 0.2075,
+          "wins": 228
+        },
+        "mlp-balanced-v2-s19-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.015833333333333366,
+          "draws": 54,
+          "games": 1200,
+          "losses": 554,
+          "score": 0.5158333333333334,
+          "wins": 592
+        },
+        "mlp-balanced-v2-s19-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.021666666666666612,
+          "draws": 80,
+          "games": 1200,
+          "losses": 534,
+          "score": 0.5216666666666666,
+          "wins": 586
+        },
+        "mlp-balanced-v2-s19-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2366666666666667,
+          "draws": 12,
+          "games": 1200,
+          "losses": 878,
+          "score": 0.2633333333333333,
+          "wins": 310
+        },
+        "mlp-balanced-v2-s20-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.3125,
+          "draws": 6,
+          "games": 1200,
+          "losses": 972,
+          "score": 0.1875,
+          "wins": 222
+        },
+        "mlp-balanced-v2-s20-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.3566666666666667,
+          "draws": 24,
+          "games": 1200,
+          "losses": 1016,
+          "score": 0.14333333333333334,
+          "wins": 160
+        },
+        "mlp-balanced-v2-s20-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.02083333333333337,
+          "draws": 14,
+          "games": 1200,
+          "losses": 568,
+          "score": 0.5208333333333334,
+          "wins": 618
+        },
+        "mlp-balanced-v2-s20-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.0658333333333333,
+          "draws": 14,
+          "games": 1200,
+          "losses": 514,
+          "score": 0.5658333333333333,
+          "wins": 672
+        },
+        "mlp-balanced-v2-s20-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.29333333333333333,
+          "draws": 0,
+          "games": 1200,
+          "losses": 952,
+          "score": 0.20666666666666667,
+          "wins": 248
+        },
+        "mlp-balanced-v2-s21-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.4275,
+          "draws": 2,
+          "games": 1200,
+          "losses": 1112,
+          "score": 0.0725,
+          "wins": 86
+        },
+        "mlp-balanced-v2-s21-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.00666666666666671,
+          "draws": 4,
+          "games": 1200,
+          "losses": 590,
+          "score": 0.5066666666666667,
+          "wins": 606
+        },
+        "mlp-balanced-v2-s21-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.02416666666666667,
+          "draws": 6,
+          "games": 1200,
+          "losses": 568,
+          "score": 0.5241666666666667,
+          "wins": 626
+        },
+        "mlp-balanced-v2-s21-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.35333333333333333,
+          "draws": 16,
+          "games": 1200,
+          "losses": 1016,
+          "score": 0.14666666666666667,
+          "wins": 168
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.2583333333333333,
+          "draws": 84,
+          "games": 1200,
+          "losses": 868,
+          "score": 0.24166666666666667,
+          "wins": 248
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.25,
+          "draws": 40,
+          "games": 1200,
+          "losses": 880,
+          "score": 0.25,
+          "wins": 280
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.3208333333333333,
+          "draws": 10,
+          "games": 1200,
+          "losses": 980,
+          "score": 0.17916666666666667,
+          "wins": 210
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-compact-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.27416666666666667,
+          "draws": 14,
+          "games": 1200,
+          "losses": 922,
+          "score": 0.22583333333333333,
+          "wins": 264
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-compact-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.09916666666666668,
+          "draws": 50,
+          "games": 1200,
+          "losses": 694,
+          "score": 0.4008333333333333,
+          "wins": 456
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.24166666666666664,
+          "draws": 84,
+          "games": 1200,
+          "losses": 848,
+          "score": 0.25833333333333336,
+          "wins": 268
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.015000000000000013,
+          "draws": 8,
+          "games": 1200,
+          "losses": 578,
+          "score": 0.515,
+          "wins": 614
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.0,
+          "draws": 4,
+          "games": 1200,
+          "losses": 598,
+          "score": 0.5,
+          "wins": 598
+        },
+        "mlp-compact-v2-s19-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2425,
+          "draws": 18,
+          "games": 1200,
+          "losses": 882,
+          "score": 0.2575,
+          "wins": 300
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.14250000000000002,
+          "draws": 86,
+          "games": 1200,
+          "losses": 728,
+          "score": 0.3575,
+          "wins": 386
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.10749999999999998,
+          "draws": 30,
+          "games": 1200,
+          "losses": 714,
+          "score": 0.3925,
+          "wins": 456
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.15083333333333332,
+          "draws": 38,
+          "games": 1200,
+          "losses": 762,
+          "score": 0.3491666666666667,
+          "wins": 400
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-compact-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.031666666666666676,
+          "draws": 120,
+          "games": 1200,
+          "losses": 578,
+          "score": 0.4683333333333333,
+          "wins": 502
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.059166666666666645,
+          "draws": 282,
+          "games": 1200,
+          "losses": 530,
+          "score": 0.44083333333333335,
+          "wins": 388
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.0008333333333333526,
+          "draws": 46,
+          "games": 1200,
+          "losses": 578,
+          "score": 0.49916666666666665,
+          "wins": 576
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.04500000000000004,
+          "draws": 32,
+          "games": 1200,
+          "losses": 530,
+          "score": 0.545,
+          "wins": 638
+        },
+        "mlp-compact-v2-s20-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.065,
+          "draws": 8,
+          "games": 1200,
+          "losses": 674,
+          "score": 0.435,
+          "wins": 518
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.14666666666666667,
+          "draws": 340,
+          "games": 1200,
+          "losses": 606,
+          "score": 0.35333333333333333,
+          "wins": 254
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.16083333333333333,
+          "draws": 270,
+          "games": 1200,
+          "losses": 658,
+          "score": 0.33916666666666667,
+          "wins": 272
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2316666666666667,
+          "draws": 88,
+          "games": 1200,
+          "losses": 834,
+          "score": 0.2683333333333333,
+          "wins": 278
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.08916666666666667,
+          "draws": 462,
+          "games": 1200,
+          "losses": 476,
+          "score": 0.41083333333333333,
+          "wins": 262
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.005833333333333357,
+          "draws": 34,
+          "games": 1200,
+          "losses": 590,
+          "score": 0.49416666666666664,
+          "wins": 576
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.0050000000000000044,
+          "draws": 112,
+          "games": 1200,
+          "losses": 550,
+          "score": 0.495,
+          "wins": 538
+        },
+        "mlp-compact-v2-s21-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.1825,
+          "draws": 86,
+          "games": 1200,
+          "losses": 776,
+          "score": 0.3175,
+          "wins": 338
+        },
+        "mlp-deep-v2-s19-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.21166666666666667,
+          "draws": 68,
+          "games": 1200,
+          "losses": 312,
+          "score": 0.7116666666666667,
+          "wins": 820
+        },
+        "mlp-deep-v2-s19-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.015000000000000013,
+          "draws": 0,
+          "games": 1200,
+          "losses": 582,
+          "score": 0.515,
+          "wins": 618
+        },
+        "mlp-deep-v2-s19-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": 0.046666666666666634,
+          "draws": 4,
+          "games": 1200,
+          "losses": 542,
+          "score": 0.5466666666666666,
+          "wins": 654
+        },
+        "mlp-deep-v2-s20-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.11666666666666664,
+          "draws": 0,
+          "games": 1200,
+          "losses": 740,
+          "score": 0.38333333333333336,
+          "wins": 460
+        },
+        "mlp-deep-v2-s20-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": 0.06499999999999995,
+          "draws": 0,
+          "games": 1200,
+          "losses": 522,
+          "score": 0.565,
+          "wins": 678
+        },
+        "mlp-deep-v2-s21-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.19083333333333335,
+          "draws": 2,
+          "games": 1200,
+          "losses": 828,
+          "score": 0.30916666666666665,
+          "wins": 370
+        },
+        "mlp-v1-s19-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.31,
+          "draws": 28,
+          "games": 1200,
+          "losses": 958,
+          "score": 0.19,
+          "wins": 214
+        },
+        "mlp-v1-s19-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.345,
+          "draws": 4,
+          "games": 1200,
+          "losses": 1012,
+          "score": 0.155,
+          "wins": 184
+        },
+        "mlp-v1-s19-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.375,
+          "draws": 24,
+          "games": 1200,
+          "losses": 1038,
+          "score": 0.125,
+          "wins": 138
+        },
+        "mlp-v1-s19-unit-147-final--mlp-compact-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.2816666666666667,
+          "draws": 48,
+          "games": 1200,
+          "losses": 914,
+          "score": 0.21833333333333332,
+          "wins": 238
+        },
+        "mlp-v1-s19-unit-147-final--mlp-compact-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.14416666666666667,
+          "draws": 30,
+          "games": 1200,
+          "losses": 758,
+          "score": 0.35583333333333333,
+          "wins": 412
+        },
+        "mlp-v1-s19-unit-147-final--mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.20916666666666667,
+          "draws": 238,
+          "games": 1200,
+          "losses": 732,
+          "score": 0.29083333333333333,
+          "wins": 230
+        },
+        "mlp-v1-s19-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.01666666666666672,
+          "draws": 28,
+          "games": 1200,
+          "losses": 566,
+          "score": 0.5166666666666667,
+          "wins": 606
+        },
+        "mlp-v1-s19-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.04749999999999999,
+          "draws": 10,
+          "games": 1200,
+          "losses": 538,
+          "score": 0.5475,
+          "wins": 652
+        },
+        "mlp-v1-s19-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.3491666666666666,
+          "draws": 2,
+          "games": 1200,
+          "losses": 1018,
+          "score": 0.15083333333333335,
+          "wins": 180
+        },
+        "mlp-v1-s19-unit-147-final--mlp-v1-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.36833333333333335,
+          "draws": 4,
+          "games": 1200,
+          "losses": 1040,
+          "score": 0.13166666666666665,
+          "wins": 156
+        },
+        "mlp-v1-s19-unit-147-final--mlp-v1-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.3275,
+          "draws": 2,
+          "games": 1200,
+          "losses": 992,
+          "score": 0.1725,
+          "wins": 206
+        },
+        "mlp-v1-s19-unit-147-final--mlp-v1-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.29666666666666663,
+          "draws": 52,
+          "games": 1200,
+          "losses": 930,
+          "score": 0.20333333333333334,
+          "wins": 218
+        },
+        "mlp-v1-s20-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.24833333333333335,
+          "draws": 8,
+          "games": 1200,
+          "losses": 894,
+          "score": 0.25166666666666665,
+          "wins": 298
+        },
+        "mlp-v1-s20-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.28583333333333333,
+          "draws": 6,
+          "games": 1200,
+          "losses": 940,
+          "score": 0.21416666666666667,
+          "wins": 254
+        },
+        "mlp-v1-s20-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.3675,
+          "draws": 6,
+          "games": 1200,
+          "losses": 1038,
+          "score": 0.1325,
+          "wins": 156
+        },
+        "mlp-v1-s20-unit-147-final--mlp-compact-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.26916666666666667,
+          "draws": 6,
+          "games": 1200,
+          "losses": 920,
+          "score": 0.23083333333333333,
+          "wins": 274
+        },
+        "mlp-v1-s20-unit-147-final--mlp-compact-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.13666666666666666,
+          "draws": 8,
+          "games": 1200,
+          "losses": 760,
+          "score": 0.36333333333333334,
+          "wins": 432
+        },
+        "mlp-v1-s20-unit-147-final--mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.2525,
+          "draws": 50,
+          "games": 1200,
+          "losses": 878,
+          "score": 0.2475,
+          "wins": 272
+        },
+        "mlp-v1-s20-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.04583333333333328,
+          "draws": 6,
+          "games": 1200,
+          "losses": 542,
+          "score": 0.5458333333333333,
+          "wins": 652
+        },
+        "mlp-v1-s20-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.043333333333333335,
+          "draws": 0,
+          "games": 1200,
+          "losses": 548,
+          "score": 0.5433333333333333,
+          "wins": 652
+        },
+        "mlp-v1-s20-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.21666666666666667,
+          "draws": 0,
+          "games": 1200,
+          "losses": 860,
+          "score": 0.2833333333333333,
+          "wins": 340
+        },
+        "mlp-v1-s20-unit-147-final--mlp-v1-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.33666666666666667,
+          "draws": 4,
+          "games": 1200,
+          "losses": 1002,
+          "score": 0.16333333333333333,
+          "wins": 194
+        },
+        "mlp-v1-s20-unit-147-final--mlp-v1-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.21916666666666668,
+          "draws": 14,
+          "games": 1200,
+          "losses": 856,
+          "score": 0.2808333333333333,
+          "wins": 330
+        },
+        "mlp-v1-s21-unit-147-final--mlp-balanced-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.19583333333333336,
+          "draws": 78,
+          "games": 1200,
+          "losses": 796,
+          "score": 0.30416666666666664,
+          "wins": 326
+        },
+        "mlp-v1-s21-unit-147-final--mlp-balanced-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.2891666666666667,
+          "draws": 42,
+          "games": 1200,
+          "losses": 926,
+          "score": 0.21083333333333334,
+          "wins": 232
+        },
+        "mlp-v1-s21-unit-147-final--mlp-balanced-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.325,
+          "draws": 24,
+          "games": 1200,
+          "losses": 978,
+          "score": 0.175,
+          "wins": 198
+        },
+        "mlp-v1-s21-unit-147-final--mlp-compact-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": -0.27749999999999997,
+          "draws": 38,
+          "games": 1200,
+          "losses": 914,
+          "score": 0.2225,
+          "wins": 248
+        },
+        "mlp-v1-s21-unit-147-final--mlp-compact-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": -0.18416666666666665,
+          "draws": 86,
+          "games": 1200,
+          "losses": 778,
+          "score": 0.31583333333333335,
+          "wins": 336
+        },
+        "mlp-v1-s21-unit-147-final--mlp-compact-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.1691666666666667,
+          "draws": 166,
+          "games": 1200,
+          "losses": 720,
+          "score": 0.3308333333333333,
+          "wins": 314
+        },
+        "mlp-v1-s21-unit-147-final--mlp-deep-v2-s19-unit-147-final": {
+          "advantage_vs_neutral": 0.009166666666666656,
+          "draws": 10,
+          "games": 1200,
+          "losses": 584,
+          "score": 0.5091666666666667,
+          "wins": 606
+        },
+        "mlp-v1-s21-unit-147-final--mlp-deep-v2-s20-unit-147-final": {
+          "advantage_vs_neutral": 0.08250000000000002,
+          "draws": 6,
+          "games": 1200,
+          "losses": 498,
+          "score": 0.5825,
+          "wins": 696
+        },
+        "mlp-v1-s21-unit-147-final--mlp-deep-v2-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.20750000000000002,
+          "draws": 18,
+          "games": 1200,
+          "losses": 840,
+          "score": 0.2925,
+          "wins": 342
+        },
+        "mlp-v1-s21-unit-147-final--mlp-v1-s21-unit-147-final": {
+          "advantage_vs_neutral": -0.26083333333333336,
+          "draws": 54,
+          "games": 1200,
+          "losses": 886,
+          "score": 0.23916666666666667,
+          "wins": 260
+        }
+      }
+    },
+    "games": 93600,
+    "records": 234
+  },
+  "exploiters": {
+    "mlp-compact-v2-s19-unit-147-final": {
+      "best_exploiter_score": 0.2,
+      "by_exploiter_seed": {
+        "19": {
+          "draws": 130,
+          "games": 400,
+          "losses": 270,
+          "score": 0.1625,
+          "wins": 0
+        },
+        "20": {
+          "draws": 150,
+          "games": 400,
+          "losses": 250,
+          "score": 0.1875,
+          "wins": 0
+        },
+        "21": {
+          "draws": 160,
+          "games": 400,
+          "losses": 240,
+          "score": 0.2,
+          "wins": 0
+        }
+      },
+      "runs": 3,
+      "total": {
+        "draws": 440,
+        "games": 1200,
+        "losses": 760,
+        "wins": 0
+      }
+    },
+    "mlp-compact-v2-s20-unit-147-final": {
+      "best_exploiter_score": 0.36,
+      "by_exploiter_seed": {
+        "19": {
+          "draws": 288,
+          "games": 400,
+          "losses": 112,
+          "score": 0.36,
+          "wins": 0
+        },
+        "20": {
+          "draws": 256,
+          "games": 400,
+          "losses": 144,
+          "score": 0.32,
+          "wins": 0
+        },
+        "21": {
+          "draws": 180,
+          "games": 400,
+          "losses": 220,
+          "score": 0.225,
+          "wins": 0
+        }
+      },
+      "runs": 3,
+      "total": {
+        "draws": 724,
+        "games": 1200,
+        "losses": 476,
+        "wins": 0
+      }
+    },
+    "mlp-compact-v2-s21-unit-147-final": {
+      "best_exploiter_score": 0.3675,
+      "by_exploiter_seed": {
+        "19": {
+          "draws": 294,
+          "games": 400,
+          "losses": 106,
+          "score": 0.3675,
+          "wins": 0
+        },
+        "20": {
+          "draws": 276,
+          "games": 400,
+          "losses": 124,
+          "score": 0.345,
+          "wins": 0
+        },
+        "21": {
+          "draws": 274,
+          "games": 400,
+          "losses": 126,
+          "score": 0.3425,
+          "wins": 0
+        }
+      },
+      "runs": 3,
+      "total": {
+        "draws": 844,
+        "games": 1200,
+        "losses": 356,
+        "wins": 0
+      }
+    },
+    "mlp-deep-v2-s19-unit-147-final": {
+      "best_exploiter_score": 0.42,
+      "by_exploiter_seed": {
+        "19": {
+          "draws": 336,
+          "games": 400,
+          "losses": 64,
+          "score": 0.42,
+          "wins": 0
+        },
+        "20": {
+          "draws": 318,
+          "games": 400,
+          "losses": 82,
+          "score": 0.3975,
+          "wins": 0
+        },
+        "21": {
+          "draws": 300,
+          "games": 400,
+          "losses": 100,
+          "score": 0.375,
+          "wins": 0
+        }
+      },
+      "runs": 3,
+      "total": {
+        "draws": 954,
+        "games": 1200,
+        "losses": 246,
+        "wins": 0
+      }
+    },
+    "mlp-deep-v2-s20-unit-147-final": {
+      "best_exploiter_score": 0.2325,
+      "by_exploiter_seed": {
+        "19": {
+          "draws": 186,
+          "games": 400,
+          "losses": 214,
+          "score": 0.2325,
+          "wins": 0
+        },
+        "20": {
+          "draws": 182,
+          "games": 400,
+          "losses": 218,
+          "score": 0.2275,
+          "wins": 0
+        },
+        "21": {
+          "draws": 90,
+          "games": 400,
+          "losses": 310,
+          "score": 0.1125,
+          "wins": 0
+        }
+      },
+      "runs": 3,
+      "total": {
+        "draws": 458,
+        "games": 1200,
+        "losses": 742,
+        "wins": 0
+      }
+    },
+    "mlp-deep-v2-s21-unit-147-final": {
+      "best_exploiter_score": 0.3925,
+      "by_exploiter_seed": {
+        "19": {
+          "draws": 314,
+          "games": 400,
+          "losses": 86,
+          "score": 0.3925,
+          "wins": 0
+        },
+        "20": {
+          "draws": 282,
+          "games": 400,
+          "losses": 118,
+          "score": 0.3525,
+          "wins": 0
+        },
+        "21": {
+          "draws": 218,
+          "games": 400,
+          "losses": 182,
+          "score": 0.2725,
+          "wins": 0
+        }
+      },
+      "runs": 3,
+      "total": {
+        "draws": 814,
+        "games": 1200,
+        "losses": 386,
+        "wins": 0
+      }
+    }
+  },
+  "format": "rl-s5b-turn-limit-audit-v1",
+  "missing_artifacts": {
+    "exploiter_learning_curves": "no evaluation curve artifact; recovery checkpoints are not performance measurements",
+    "historical_checkpoints": [
+      {
+        "id": "mlp-v1-s19-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-19\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-v1-s19-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-19\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-v1-s19-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-19\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-v1-s20-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-20\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-v1-s20-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-20\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-v1-s20-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-20\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-v1-s21-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-21\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-v1-s21-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-21\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-v1-s21-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-local-work\\mlp-v1-21\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-compact-v2-s19-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-19\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-compact-v2-s19-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-19\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-compact-v2-s19-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-19\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-compact-v2-s20-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-20\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-compact-v2-s20-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-20\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-compact-v2-s20-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-20\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-compact-v2-s21-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-21\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-compact-v2-s21-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-21\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-compact-v2-s21-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-compact-v2-21\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-balanced-v2-s19-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-19\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-balanced-v2-s19-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-19\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-balanced-v2-s19-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-19\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-balanced-v2-s20-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-20\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-balanced-v2-s20-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-20\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-balanced-v2-s20-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-20\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-balanced-v2-s21-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-21\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-balanced-v2-s21-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-21\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-balanced-v2-s21-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-balanced-v2-21\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-deep-v2-s19-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-19\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-deep-v2-s19-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-19\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-deep-v2-s19-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-19\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-deep-v2-s20-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-20\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-deep-v2-s20-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-20\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-deep-v2-s20-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-20\\recovery\\units\\unit-96",
+        "unit": 96
+      },
+      {
+        "id": "mlp-deep-v2-s21-unit-32-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-21\\recovery\\units\\unit-32",
+        "unit": 32
+      },
+      {
+        "id": "mlp-deep-v2-s21-unit-64-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-21\\recovery\\units\\unit-64",
+        "unit": 64
+      },
+      {
+        "id": "mlp-deep-v2-s21-unit-96-historical",
+        "provenance": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\configs\\rl\\..\\..\\benchmarks\\server\\RL-S5\\.rl-s5-v2-local-work\\mlp-deep-v2-21\\recovery\\units\\unit-96",
+        "unit": 96
+      }
+    ],
+    "per_game_crossplay_terminal_telemetry": "not stored; only aggregate W/D/L, rounds and actions",
+    "replays": "no replay artifact found under the S5b run",
+    "required_json_files_not_found": [],
+    "result(1).json": "not present anywhere in the workspace"
+  },
+  "selfplay": {
+    "mlp-compact-v2-s19-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 66,
+          "games": 2452,
+          "losses": 1068,
+          "score": 0.550978792822186,
+          "wins": 1318
+        },
+        "frozen_finalists": {
+          "draws": 66,
+          "games": 2400,
+          "losses": 1068,
+          "score": 0.54125,
+          "wins": 1266
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 48,
+          "games": 2452,
+          "losses": 430,
+          "score": 0.8148450244698205,
+          "wins": 1974
+        },
+        "frozen_finalists": {
+          "draws": 48,
+          "games": 2400,
+          "losses": 430,
+          "score": 0.8108333333333333,
+          "wins": 1922
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 16,
+          "games": 2452,
+          "losses": 200,
+          "score": 0.9151712887438825,
+          "wins": 2236
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 200,
+          "score": 0.91375,
+          "wins": 2186
+        },
+        "random_legal": {
+          "draws": 2,
+          "games": 40,
+          "losses": 0,
+          "score": 0.975,
+          "wins": 38
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 5,
+          "games": 2452,
+          "losses": 126,
+          "score": 0.9475938009787929,
+          "wins": 2321
+        },
+        "frozen_finalists": {
+          "draws": 4,
+          "games": 2400,
+          "losses": 126,
+          "score": 0.9466666666666667,
+          "wins": 2270
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 20,
+          "games": 2452,
+          "losses": 68,
+          "score": 0.968189233278956,
+          "wins": 2364
+        },
+        "frozen_finalists": {
+          "draws": 16,
+          "games": 2400,
+          "losses": 68,
+          "score": 0.9683333333333334,
+          "wins": 2316
+        },
+        "random_legal": {
+          "draws": 2,
+          "games": 40,
+          "losses": 0,
+          "score": 0.975,
+          "wins": 38
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 25,
+          "games": 2452,
+          "losses": 74,
+          "score": 0.9647226753670473,
+          "wins": 2353
+        },
+        "frozen_finalists": {
+          "draws": 22,
+          "games": 2400,
+          "losses": 74,
+          "score": 0.9645833333333333,
+          "wins": 2304
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      }
+    },
+    "mlp-compact-v2-s20-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 172,
+          "games": 2452,
+          "losses": 1112,
+          "score": 0.5114192495921697,
+          "wins": 1168
+        },
+        "frozen_finalists": {
+          "draws": 168,
+          "games": 2400,
+          "losses": 1112,
+          "score": 0.5016666666666667,
+          "wins": 1120
+        },
+        "random_legal": {
+          "draws": 4,
+          "games": 40,
+          "losses": 0,
+          "score": 0.95,
+          "wins": 36
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 35,
+          "games": 2452,
+          "losses": 614,
+          "score": 0.7424551386623165,
+          "wins": 1803
+        },
+        "frozen_finalists": {
+          "draws": 34,
+          "games": 2400,
+          "losses": 614,
+          "score": 0.7370833333333333,
+          "wins": 1752
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 12,
+          "games": 2452,
+          "losses": 410,
+          "score": 0.8303425774877651,
+          "wins": 2030
+        },
+        "frozen_finalists": {
+          "draws": 12,
+          "games": 2400,
+          "losses": 410,
+          "score": 0.8266666666666667,
+          "wins": 1978
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 39,
+          "games": 2452,
+          "losses": 218,
+          "score": 0.9031402936378466,
+          "wins": 2195
+        },
+        "frozen_finalists": {
+          "draws": 36,
+          "games": 2400,
+          "losses": 218,
+          "score": 0.9016666666666666,
+          "wins": 2146
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 21,
+          "games": 2452,
+          "losses": 130,
+          "score": 0.942699836867863,
+          "wins": 2301
+        },
+        "frozen_finalists": {
+          "draws": 18,
+          "games": 2400,
+          "losses": 130,
+          "score": 0.9420833333333334,
+          "wins": 2252
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 48,
+          "games": 2452,
+          "losses": 76,
+          "score": 0.9592169657422512,
+          "wins": 2328
+        },
+        "frozen_finalists": {
+          "draws": 44,
+          "games": 2400,
+          "losses": 76,
+          "score": 0.9591666666666666,
+          "wins": 2280
+        },
+        "random_legal": {
+          "draws": 2,
+          "games": 40,
+          "losses": 0,
+          "score": 0.975,
+          "wins": 38
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      }
+    },
+    "mlp-compact-v2-s21-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 340,
+          "games": 2452,
+          "losses": 906,
+          "score": 0.5611745513866232,
+          "wins": 1206
+        },
+        "frozen_finalists": {
+          "draws": 340,
+          "games": 2400,
+          "losses": 906,
+          "score": 0.5516666666666666,
+          "wins": 1154
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 76,
+          "games": 2452,
+          "losses": 650,
+          "score": 0.7194127243066885,
+          "wins": 1726
+        },
+        "frozen_finalists": {
+          "draws": 76,
+          "games": 2400,
+          "losses": 650,
+          "score": 0.7133333333333334,
+          "wins": 1674
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 35,
+          "games": 2452,
+          "losses": 486,
+          "score": 0.7946574225122349,
+          "wins": 1931
+        },
+        "frozen_finalists": {
+          "draws": 34,
+          "games": 2400,
+          "losses": 486,
+          "score": 0.7904166666666667,
+          "wins": 1880
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 54,
+          "games": 2452,
+          "losses": 428,
+          "score": 0.814437194127243,
+          "wins": 1970
+        },
+        "frozen_finalists": {
+          "draws": 50,
+          "games": 2400,
+          "losses": 428,
+          "score": 0.81125,
+          "wins": 1922
+        },
+        "random_legal": {
+          "draws": 4,
+          "games": 40,
+          "losses": 0,
+          "score": 0.95,
+          "wins": 36
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 41,
+          "games": 2452,
+          "losses": 390,
+          "score": 0.8325856443719413,
+          "wins": 2021
+        },
+        "frozen_finalists": {
+          "draws": 40,
+          "games": 2400,
+          "losses": 390,
+          "score": 0.8291666666666667,
+          "wins": 1970
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 18,
+          "games": 2452,
+          "losses": 392,
+          "score": 0.8364600326264274,
+          "wins": 2042
+        },
+        "frozen_finalists": {
+          "draws": 18,
+          "games": 2400,
+          "losses": 392,
+          "score": 0.8329166666666666,
+          "wins": 1990
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-deep-v2-s19-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 89,
+          "games": 2452,
+          "losses": 1942,
+          "score": 0.18984502446982054,
+          "wins": 421
+        },
+        "frozen_finalists": {
+          "draws": 60,
+          "games": 2400,
+          "losses": 1942,
+          "score": 0.17833333333333334,
+          "wins": 398
+        },
+        "random_legal": {
+          "draws": 29,
+          "games": 40,
+          "losses": 0,
+          "score": 0.6375,
+          "wins": 11
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 53,
+          "games": 2452,
+          "losses": 798,
+          "score": 0.6637438825448614,
+          "wins": 1601
+        },
+        "frozen_finalists": {
+          "draws": 20,
+          "games": 2400,
+          "losses": 798,
+          "score": 0.6633333333333333,
+          "wins": 1582
+        },
+        "random_legal": {
+          "draws": 33,
+          "games": 40,
+          "losses": 0,
+          "score": 0.5875,
+          "wins": 7
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 56,
+          "games": 2452,
+          "losses": 636,
+          "score": 0.7292006525285482,
+          "wins": 1760
+        },
+        "frozen_finalists": {
+          "draws": 18,
+          "games": 2400,
+          "losses": 636,
+          "score": 0.73125,
+          "wins": 1746
+        },
+        "random_legal": {
+          "draws": 38,
+          "games": 40,
+          "losses": 0,
+          "score": 0.525,
+          "wins": 2
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 74,
+          "games": 2452,
+          "losses": 740,
+          "score": 0.683115823817292,
+          "wins": 1638
+        },
+        "frozen_finalists": {
+          "draws": 40,
+          "games": 2400,
+          "losses": 740,
+          "score": 0.6833333333333333,
+          "wins": 1620
+        },
+        "random_legal": {
+          "draws": 34,
+          "games": 40,
+          "losses": 0,
+          "score": 0.575,
+          "wins": 6
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 65,
+          "games": 2452,
+          "losses": 522,
+          "score": 0.7738580750407831,
+          "wins": 1865
+        },
+        "frozen_finalists": {
+          "draws": 32,
+          "games": 2400,
+          "losses": 522,
+          "score": 0.7758333333333334,
+          "wins": 1846
+        },
+        "random_legal": {
+          "draws": 33,
+          "games": 40,
+          "losses": 0,
+          "score": 0.5875,
+          "wins": 7
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 89,
+          "games": 2452,
+          "losses": 568,
+          "score": 0.7502039151712887,
+          "wins": 1795
+        },
+        "frozen_finalists": {
+          "draws": 54,
+          "games": 2400,
+          "losses": 568,
+          "score": 0.7520833333333333,
+          "wins": 1778
+        },
+        "random_legal": {
+          "draws": 35,
+          "games": 40,
+          "losses": 0,
+          "score": 0.5625,
+          "wins": 5
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-deep-v2-s20-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 36,
+          "games": 2452,
+          "losses": 634,
+          "score": 0.734094616639478,
+          "wins": 1782
+        },
+        "frozen_finalists": {
+          "draws": 36,
+          "games": 2400,
+          "losses": 634,
+          "score": 0.7283333333333334,
+          "wins": 1730
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 18,
+          "games": 2452,
+          "losses": 212,
+          "score": 0.9098694942903752,
+          "wins": 2222
+        },
+        "frozen_finalists": {
+          "draws": 18,
+          "games": 2400,
+          "losses": 212,
+          "score": 0.9079166666666667,
+          "wins": 2170
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 14,
+          "games": 2452,
+          "losses": 104,
+          "score": 0.9547308319738989,
+          "wins": 2334
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 104,
+          "score": 0.95375,
+          "wins": 2282
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 14,
+          "games": 2452,
+          "losses": 48,
+          "score": 0.9775693311582382,
+          "wins": 2390
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 48,
+          "score": 0.9770833333333333,
+          "wins": 2338
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 8,
+          "games": 2452,
+          "losses": 22,
+          "score": 0.9893964110929854,
+          "wins": 2422
+        },
+        "frozen_finalists": {
+          "draws": 8,
+          "games": 2400,
+          "losses": 22,
+          "score": 0.9891666666666666,
+          "wins": 2370
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 6,
+          "games": 2452,
+          "losses": 24,
+          "score": 0.9889885807504079,
+          "wins": 2422
+        },
+        "frozen_finalists": {
+          "draws": 6,
+          "games": 2400,
+          "losses": 24,
+          "score": 0.98875,
+          "wins": 2370
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    },
+    "mlp-deep-v2-s21-unit-147-final": {
+      "147": {
+        "all": {
+          "draws": 18,
+          "games": 2452,
+          "losses": 1276,
+          "score": 0.4759380097879282,
+          "wins": 1158
+        },
+        "frozen_finalists": {
+          "draws": 18,
+          "games": 2400,
+          "losses": 1276,
+          "score": 0.46458333333333335,
+          "wins": 1106
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "157": {
+        "all": {
+          "draws": 69,
+          "games": 2452,
+          "losses": 782,
+          "score": 0.6670065252854812,
+          "wins": 1601
+        },
+        "frozen_finalists": {
+          "draws": 68,
+          "games": 2400,
+          "losses": 782,
+          "score": 0.66,
+          "wins": 1550
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "167": {
+        "all": {
+          "draws": 68,
+          "games": 2452,
+          "losses": 478,
+          "score": 0.7911908646003263,
+          "wins": 1906
+        },
+        "frozen_finalists": {
+          "draws": 66,
+          "games": 2400,
+          "losses": 478,
+          "score": 0.7870833333333334,
+          "wins": 1856
+        },
+        "random_legal": {
+          "draws": 2,
+          "games": 40,
+          "losses": 0,
+          "score": 0.975,
+          "wins": 38
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "177": {
+        "all": {
+          "draws": 43,
+          "games": 2452,
+          "losses": 546,
+          "score": 0.7685562805872757,
+          "wins": 1863
+        },
+        "frozen_finalists": {
+          "draws": 42,
+          "games": 2400,
+          "losses": 546,
+          "score": 0.76375,
+          "wins": 1812
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      },
+      "187": {
+        "all": {
+          "draws": 25,
+          "games": 2452,
+          "losses": 496,
+          "score": 0.7926182707993474,
+          "wins": 1931
+        },
+        "frozen_finalists": {
+          "draws": 22,
+          "games": 2400,
+          "losses": 496,
+          "score": 0.78875,
+          "wins": 1882
+        },
+        "random_legal": {
+          "draws": 1,
+          "games": 40,
+          "losses": 0,
+          "score": 0.9875,
+          "wins": 39
+        },
+        "scripted_bots": {
+          "draws": 2,
+          "games": 12,
+          "losses": 0,
+          "score": 0.9166666666666666,
+          "wins": 10
+        }
+      },
+      "197": {
+        "all": {
+          "draws": 14,
+          "games": 2452,
+          "losses": 442,
+          "score": 0.816884176182708,
+          "wins": 1996
+        },
+        "frozen_finalists": {
+          "draws": 14,
+          "games": 2400,
+          "losses": 442,
+          "score": 0.8129166666666666,
+          "wins": 1944
+        },
+        "random_legal": {
+          "draws": 0,
+          "games": 40,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 40
+        },
+        "scripted_bots": {
+          "draws": 0,
+          "games": 12,
+          "losses": 0,
+          "score": 1.0,
+          "wins": 12
+        }
+      }
+    }
+  },
+  "source_files": {
+    "continuation": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\artifacts\\rl\\s5b\\rl-s5b-default\\continuation\\result.json",
+    "crossplay": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\artifacts\\rl\\s5b\\rl-s5b-default\\crossplay\\crossplay.json",
+    "exploiters": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\artifacts\\rl\\s5b\\rl-s5b-default\\exploiters\\result.json",
+    "selfplay": "C:\\Users\\louis.remy\\OneDrive - Acelys\\Bureau\\Projets\\Chat_acelys\\dinorl-engine\\artifacts\\rl\\s5b\\rl-s5b-default\\selfplay\\result.json"
+  },
+  "status": "complete",
+  "turn_limit": {
+    "available_terminal_reason_source": "deterministic_bots.metrics.victory_route only",
+    "replay_files_found": 0,
+    "status": "not_identifiable_from_crossplay_or_finalist aggregates",
+    "unavailable": [
+      "global and per-crossplay terminal causes",
+      "duration histogram and quantiles",
+      "state and final five turns at the limit",
+      "replay classification",
+      "paired 30/40/50/60 counterfactuals"
+    ]
+  }
+}

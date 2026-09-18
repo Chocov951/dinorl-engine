@@ -88,3 +88,25 @@ def test_ko_during_first_turn_of_round_thirty_precedes_round_limit() -> None:
     assert state.end_reason is EndReason.KO
     assert env.result.individual_turns == 59
     assert env.result.rounds_completed == 29
+
+
+def test_explicit_evaluation_limit_preserves_ko_priority() -> None:
+    env = DinoRLEnv(map_id=MAP_ID, seed=13, max_rounds=1)
+    state = env.reset(first_actor=Actor.A)
+    state.raptor(Actor.A).position = (1, 1)
+    state.raptor(Actor.B).position = (1, 2)
+    state.raptor(Actor.B).hp = 2
+
+    env.step(Action.BITE)
+
+    assert env.result.reason is EndReason.KO
+    assert env.result.winner is Actor.A
+
+
+def test_explicit_evaluation_limit_draws_at_requested_round() -> None:
+    env = DinoRLEnv(map_id=MAP_ID, seed=13, max_rounds=2)
+    env.reset(first_actor=Actor.A)
+    for _ in range(4):
+        env.step(Action.END_TURN)
+    assert env.result.reason is EndReason.ROUND_LIMIT
+    assert env.result.rounds_completed == 2

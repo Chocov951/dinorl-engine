@@ -72,12 +72,17 @@ class GameResult:
 class DinoRLEnv:
     """Own and mutate the state of one deterministic game."""
 
-    def __init__(self, map_id: str, seed: int, replay: bool = False) -> None:
+    def __init__(self, map_id: str, seed: int, replay: bool = False, max_rounds: int = 30) -> None:
         if type(seed) is not int or not 0 <= seed <= _MAX_SEED:
             raise ValueError("seed must be an integer between 0 and 2**63 - 1")
+        if type(max_rounds) is not int or max_rounds <= 0:
+            raise ValueError("max_rounds must be a positive integer")
         self._arena: ArenaMap = load_map(map_id)
         self.seed = seed
         self.replay = replay
+        # The default is the published game rule.  Evaluation may explicitly
+        # select a different cutoff without changing training or the ruleset.
+        self.max_rounds = max_rounds
         self._state: GameState | None = None
         self._action_count = 0
 
@@ -295,7 +300,7 @@ class DinoRLEnv:
         state = self.state
         outgoing_actor = state.active_actor
         state.raptor(outgoing_actor).movement_points = 0
-        if outgoing_actor is not state.first_actor and state.round == 30:
+        if outgoing_actor is not state.first_actor and state.round == self.max_rounds:
             state.terminal = True
             state.winner = "draw"
             state.end_reason = EndReason.ROUND_LIMIT

@@ -5,12 +5,14 @@ from __future__ import annotations
 import json
 import math
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 from sb3_contrib.common.maskable.utils import get_action_masks
 
-from dinorl_engine.rl.env.vectorization import create_vector_environment
+from dinorl_engine.rl.env.vectorization import VectorEnvironmentConfig, create_vector_environment
 from dinorl_engine.rl.evaluation.comparison import select_architecture
 from dinorl_engine.rl.evaluation.gates import deterministic_gate, publication_gate
 from dinorl_engine.rl.evaluation.reports import RunReportWriter
@@ -18,14 +20,17 @@ from dinorl_engine.rl.evaluation.suites import evaluate_deterministic, evaluate_
 from dinorl_engine.rl.orchestration.ledger import UnitLedger
 from dinorl_engine.rl.policies.factory import PolicyArchitecture
 from dinorl_engine.rl.training.runner import AtomicPPOUnitRunner, AtomicRecoveryStore
-from dinorl_engine.rl.training.unit import create_maskable_ppo
+from dinorl_engine.rl.training.unit import TrainablePolicyArchitecture, create_maskable_ppo
 from dinorl_engine.server_checks.suites.rl_s3 import SELECTED_CONFIGURATION
 
 __all__ = [
     "ARCHITECTURES",
     "DEVELOPMENT_SEEDS",
+    "ProgressCallback",
+    "S5Progress",
     "UNITS_PER_SEED",
     "comparison_passed",
+    "run_candidate_measurement",
     "run_measurement",
 ]
 
@@ -36,6 +41,22 @@ _TRANSITIONS_PER_UNIT = 2048
 _EPOCHS_PER_UNIT = 4
 _OPTIMIZER_STEPS_PER_UNIT = 32
 _EVALUATION_INTERVAL = 5
+
+
+@dataclass(frozen=True, slots=True)
+class S5Progress:
+    """One durable-unit-granularity update for an RL-S5 console display."""
+
+    architecture: str
+    seed: int
+    completed_units: int
+    total_units: int
+    completed_runs: int
+    total_runs: int
+    phase: Literal["initializing", "evaluating", "training", "tournament", "completed"]
+
+
+type ProgressCallback = Callable[[S5Progress], None]
 
 
 def _non_negative_number(value: object) -> bool:
@@ -184,8 +205,15 @@ def _scores(report: object) -> dict[str, float]:
     return {key: float(value) for key, value in scores.items() if isinstance(key, str)}
 
 
-def _candidate_run(
-    directory: Path, architecture: PolicyArchitecture, seed: int
+def run_candidate_measurement(
+    directory: Path,
+    architecture: TrainablePolicyArchitecture,
+    seed: int,
+    *,
+    configuration: VectorEnvironmentConfig,
+    completed_runs: int,
+    total_runs: int,
+    progress: ProgressCallback | None,
 ) -> dict[str, object]:
     identifier = f"{architecture.value}-{seed}"
     run_directory = directory / identifier
@@ -197,14 +225,14 @@ def _candidate_run(
     ledger.reserve(run_id=identifier, units=UNITS_PER_SEED, idempotency_key=f"reserve-{identifier}")
     latest = store.load_latest()
     if latest is None:
-        environment = create_vector_environment(SELECTED_CONFIGURATION)
+        environment = create_vector_environment(configuration)
         runner = AtomicPPOUnitRunner(
             run_id=identifier,
-            configuration=SELECTED_CONFIGURATION,
+            configuration=configuration,
             model=create_maskable_ppo(
                 environment,
                 seed=seed,
-                n_steps=SELECTED_CONFIGURATION.n_steps,
+                n_steps=configuration.n_steps,
                 architecture=architecture,
             ),
             environment=environment,
@@ -215,18 +243,37 @@ def _candidate_run(
     else:
         runner, _metrics, latest = AtomicPPOUnitRunner.restore_latest(
             run_id=identifier,
-            configuration=SELECTED_CONFIGURATION,
+            configuration=configuration,
             recovery_store=store,
             ledger=ledger,
         )
         completed = latest.sequence
+
+    def report_progress(
+        phase: Literal["initializing", "evaluating", "training", "completed"],
+    ) -> None:
+        if progress is not None:
+            progress(
+                S5Progress(
+                    architecture=architecture.value,
+                    seed=seed,
+                    completed_units=completed,
+                    total_units=UNITS_PER_SEED,
+                    completed_runs=completed_runs,
+                    total_runs=total_runs,
+                    phase=phase,
+                )
+            )
+
     try:
+        report_progress("initializing")
         previous_threshold = False
         for prior_record in reports.evaluation_records():
             gate = prior_record.get("deterministic_gate")
             if isinstance(gate, Mapping) and gate.get("thresholds_passed") is True:
                 previous_threshold = True
         if not reports.has_evaluation(0):
+            report_progress("evaluating")
             initial = evaluate_deterministic(
                 runner.model, seed=seed, diagnostic_directory=run_directory / "diagnostic_replays"
             )
@@ -250,9 +297,12 @@ def _candidate_run(
                 }
             )
             store.discard_before(sequence)
+            completed = sequence
+            report_progress("training")
             if (
                 sequence % _EVALUATION_INTERVAL == 0 or sequence == UNITS_PER_SEED
             ) and not reports.has_evaluation(sequence):
+                report_progress("evaluating")
                 deterministic = evaluate_deterministic(
                     runner.model,
                     seed=seed,
@@ -317,6 +367,7 @@ def _candidate_run(
         reports.write_final_report(
             final_score=primary_score, inference_seconds=_inference_seconds(runner)
         )
+        report_progress("completed")
         return {
             "seed": seed,
             "units": UNITS_PER_SEED,
@@ -336,12 +387,25 @@ def _candidate_run(
         runner.environment.close()
 
 
-def run_measurement(work_directory: Path) -> dict[str, object]:
+def run_measurement(
+    work_directory: Path, *, progress: ProgressCallback | None = None
+) -> dict[str, object]:
     """Run or resume the complete six-run RL-S5 comparison in ``work_directory``."""
 
     candidates: list[dict[str, object]] = []
-    for architecture in ARCHITECTURES:
-        seeds = [_candidate_run(work_directory, architecture, seed) for seed in DEVELOPMENT_SEEDS]
+    for architecture_index, architecture in enumerate(ARCHITECTURES):
+        seeds = [
+            run_candidate_measurement(
+                work_directory,
+                architecture,
+                seed,
+                configuration=SELECTED_CONFIGURATION,
+                completed_runs=architecture_index * len(DEVELOPMENT_SEEDS) + seed_index,
+                total_runs=len(ARCHITECTURES) * len(DEVELOPMENT_SEEDS),
+                progress=progress,
+            )
+            for seed_index, seed in enumerate(DEVELOPMENT_SEEDS)
+        ]
         aggregates: dict[str, object] = {
             "transitions_to_gate": next(
                 (

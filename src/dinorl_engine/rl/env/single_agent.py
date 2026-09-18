@@ -6,7 +6,7 @@ import copy
 import hashlib
 from collections.abc import Callable
 from random import Random
-from typing import Final, cast
+from typing import Final, Protocol, cast
 
 import gymnasium as gym
 import numpy as np
@@ -36,7 +36,7 @@ from dinorl_engine.rl.rewards.reference import reference_reward
 from dinorl_engine.rl.rewards.runtime import CompiledReward
 from dinorl_engine.rl.rewards.transition import public_reward_transition
 
-__all__ = ["DinoRLSingleAgentEnv", "IllegalActionEscapeError"]
+__all__ = ["DinoRLSingleAgentEnv", "IllegalActionEscapeError", "TrainingOpponentPool"]
 
 _MAX_SEED: Final = 2**32 - 1
 _ENGINE_SEED_MODULUS: Final = 2**63
@@ -45,6 +45,30 @@ _OPTION_KEYS: Final = frozenset({"learner_actor", "first_actor", "opponent_id"})
 
 class IllegalActionEscapeError(RuntimeError):
     """A policy selected an action that its current legal-action mask forbade."""
+
+
+class TrainingOpponentPool(Protocol):
+    """Immutable opponent catalog used by an RL continuation training environment."""
+
+    def select(
+        self,
+        *,
+        selection_seed: int,
+        learner_actor: Actor,
+        first_actor: Actor,
+    ) -> tuple[str, Controller]:
+        """Select one frozen opponent deterministically for a new episode."""
+
+    def restore(
+        self,
+        *,
+        opponent_id: str,
+        selection_seed: int,
+        learner_actor: Actor,
+        first_actor: Actor,
+        controller_state: object,
+    ) -> Controller:
+        """Recreate the selected frozen opponent at an interrupted-game boundary."""
 
 
 def _validate_seed(seed: object) -> int:
@@ -74,6 +98,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         seed: int = 0,
         environment_index: int = 0,
         reward_program: CompiledReward | None = None,
+        training_opponent_pool: TrainingOpponentPool | None = None,
     ) -> None:
         super().__init__()
         self._base_seed = _validate_seed(seed)
@@ -84,13 +109,21 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._engine: DinoRLEnv | None = None
         self._learner_actor: Actor | None = None
         self._first_actor: Actor | None = None
-        self._opponent_id: ControllerId | None = None
+        self._opponent_id: str | None = None
         self._opponent: Controller | None = None
+        self._opponent_selection_seed: int | None = None
+        self._training_opponent_pool = training_opponent_pool
         self._learner_transitions = 0
         self._engine_actions = 0
         self._engine_action_history: list[int] = []
         self._total_learner_transitions = 0
         self._total_engine_actions = 0
+        self._training_role_counts = {
+            "learner_first": 0,
+            "learner_second": 0,
+            "learner_a": 0,
+            "learner_b": 0,
+        }
         self._reward_program = reward_program
         self._reward_evaluator: Callable[[dict[str, object]], float] | None = (
             reward_program.vm_evaluator if reward_program is not None else None
@@ -139,6 +172,12 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         """Return all atomic engine actions performed by this environment instance."""
 
         return self._total_engine_actions
+
+    @property
+    def training_role_counts(self) -> dict[str, int]:
+        """Return the realised role draws, rather than their expected distribution."""
+
+        return dict(self._training_role_counts)
 
     @property
     def active_actor(self) -> Actor:
@@ -207,18 +246,35 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             if first_override is not None
             else self._choose_actor("initiative", episode_index)
         )
+        self._training_role_counts[
+            "learner_first" if self._learner_actor is self._first_actor else "learner_second"
+        ] += 1
+        actor_counter = "learner_a" if self._learner_actor is Actor.A else "learner_b"
+        self._training_role_counts[actor_counter] += 1
         self._opponent_id = (
             opponent_override
             if opponent_override is not None
             else self._choose_opponent_id(episode_index)
         )
+        self._opponent_selection_seed = self._derive_seed("training-opponent", episode_index)
         self._engine = DinoRLEnv(
             MAP_ID,
             seed=self._derive_seed("engine", episode_index),
             replay=False,
         )
         self._engine.reset(first_actor=self._first_actor)
-        self._opponent = create_scripted_controller(self._opponent_id)
+        if self._training_opponent_pool is None:
+            self._opponent = create_scripted_controller(cast(ControllerId, self._opponent_id))
+        else:
+            if opponent_override is not None:
+                raise ValueError(
+                    "training opponent pools do not support opponent_id reset overrides"
+                )
+            self._opponent_id, self._opponent = self._training_opponent_pool.select(
+                selection_seed=self._opponent_selection_seed,
+                learner_actor=self._learner(),
+                first_actor=self._first(),
+            )
         self._learner_transitions = 0
         self._engine_actions = 0
         self._engine_action_history = []
@@ -261,7 +317,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         future decisions without serializing executable controller objects.
         """
 
-        return {
+        state: dict[str, object] = {
             "format": "dinorl-single-agent-recovery-v1",
             "base_seed": self._base_seed,
             "environment_index": self._environment_index,
@@ -278,7 +334,31 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
                 "total_engine_actions": self._total_engine_actions,
             },
             "numpy_rng": copy.deepcopy(self.np_random.bit_generator.state),
+            "training_role_counts": dict(self._training_role_counts),
         }
+        if self._training_opponent_pool is None:
+            return state
+        selection_seed = self._opponent_selection_seed
+        # A phase-B branch begins from a phase-A checkpoint.  Its already-open
+        # scripted episodes remain exactly as they were until their natural end;
+        # only subsequent resets draw from the frozen pool.
+        if selection_seed is None:
+            return state
+        if type(selection_seed) is not int or not 0 <= selection_seed < _ENGINE_SEED_MODULUS:
+            raise RuntimeError("training opponent selection seed is invalid")
+        opponent = self._opponent_controller()
+        exporter = getattr(opponent, "export_recovery_state", None)
+        if exporter is not None and not callable(exporter):
+            raise RuntimeError("training opponent recovery exporter is invalid")
+        controller_state = None if exporter is None else exporter()
+        state.update(
+            {
+                "format": "dinorl-single-agent-s5b-recovery-v1",
+                "opponent_selection_seed": selection_seed,
+                "opponent_state": controller_state,
+            }
+        )
+        return state
 
     def snapshot_recovery_state(self) -> dict[str, object]:
         """Return a compact observable state useful for exact-recovery assertions."""
@@ -296,11 +376,12 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
     def restore_recovery_state(self, recovery: object) -> None:
         """Restore an exported episode without resetting the underlying trajectory."""
 
-        if (
-            not isinstance(recovery, dict)
-            or recovery.get("format") != "dinorl-single-agent-recovery-v1"
-        ):
+        if not isinstance(recovery, dict) or recovery.get("format") not in {
+            "dinorl-single-agent-recovery-v1",
+            "dinorl-single-agent-s5b-recovery-v1",
+        }:
             raise ValueError("single-agent recovery state has an invalid format")
+        standard_format = recovery["format"] == "dinorl-single-agent-recovery-v1"
         required = {
             "format",
             "base_seed",
@@ -314,7 +395,10 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             "counters",
             "numpy_rng",
         }
-        if set(recovery) != required:
+        if not standard_format:
+            required |= {"opponent_selection_seed", "opponent_state"}
+        allowed = (required, required | {"training_role_counts"})
+        if set(recovery) not in allowed:
             raise ValueError("single-agent recovery state has unexpected fields")
         base_seed = recovery["base_seed"]
         environment_index = recovery["environment_index"]
@@ -326,6 +410,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         first_name = recovery["first_actor"]
         opponent_id = recovery["opponent_id"]
         numpy_rng = recovery["numpy_rng"]
+        training_role_counts = recovery.get("training_role_counts")
         if (
             type(base_seed) is not int
             or not 0 <= base_seed <= _MAX_SEED
@@ -339,7 +424,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             or not isinstance(counters, dict)
             or not isinstance(learner_name, str)
             or not isinstance(first_name, str)
-            or opponent_id not in SCRIPTED_CONTROLLER_IDS
+            or not isinstance(opponent_id, str)
             or not isinstance(numpy_rng, dict)
         ):
             raise ValueError("single-agent recovery state has invalid values")
@@ -353,6 +438,13 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             type(value) is not int or value < 0 for value in counters.values()
         ):
             raise ValueError("single-agent recovery counters are invalid")
+        expected_roles = {"learner_first", "learner_second", "learner_a", "learner_b"}
+        if training_role_counts is not None and (
+            not isinstance(training_role_counts, dict)
+            or set(training_role_counts) != expected_roles
+            or any(type(value) is not int or value < 0 for value in training_role_counts.values())
+        ):
+            raise ValueError("single-agent recovery role counters are invalid")
         if any(
             type(action_index) is not int or not 0 <= action_index < len(Action)
             for action_index in history
@@ -375,13 +467,38 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._engine = engine
         self._learner_actor = learner_actor
         self._first_actor = first_actor
-        self._opponent_id = cast(ControllerId, opponent_id)
-        self._opponent = create_scripted_controller(self._opponent_id)
+        self._opponent_id = opponent_id
+        if standard_format:
+            if opponent_id not in SCRIPTED_CONTROLLER_IDS:
+                raise ValueError("single-agent recovery opponent is invalid")
+            self._opponent = create_scripted_controller(cast(ControllerId, opponent_id))
+            self._opponent_selection_seed = None
+        else:
+            selection_seed = recovery["opponent_selection_seed"]
+            if (
+                self._training_opponent_pool is None
+                or type(selection_seed) is not int
+                or not 0 <= selection_seed < _ENGINE_SEED_MODULUS
+            ):
+                raise ValueError("single-agent S5b recovery opponent is invalid")
+            self._opponent_selection_seed = selection_seed
+            self._opponent = self._training_opponent_pool.restore(
+                opponent_id=opponent_id,
+                selection_seed=selection_seed,
+                learner_actor=learner_actor,
+                first_actor=first_actor,
+                controller_state=recovery["opponent_state"],
+            )
         self._engine_action_history = list(history)
         self._learner_transitions = counters["learner_transitions"]
         self._engine_actions = counters["engine_actions"]
         self._total_learner_transitions = counters["total_learner_transitions"]
         self._total_engine_actions = counters["total_engine_actions"]
+        self._training_role_counts = (
+            {name: int(value) for name, value in training_role_counts.items()}
+            if isinstance(training_role_counts, dict)
+            else {name: 0 for name in expected_roles}
+        )
         try:
             self.np_random.bit_generator.state = copy.deepcopy(numpy_rng)
         except (TypeError, ValueError) as error:

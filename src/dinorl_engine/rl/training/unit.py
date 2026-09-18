@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final
 
@@ -15,11 +15,16 @@ from stable_baselines3.common.vec_env import VecEnv
 
 from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
 from dinorl_engine.rl.policies.factory import PolicyArchitecture, architecture_specification
+from dinorl_engine.rl.policies.local_mlp_v2 import (
+    LocalMLPV2Architecture,
+    local_mlp_v2_specification,
+)
 
 __all__ = [
     "PPO_BATCH_SIZE",
     "PPO_EPOCHS",
     "ROLLOUT_TRANSITIONS",
+    "TrainablePolicyArchitecture",
     "PolicyArchitecture",
     "PPOUnitMetrics",
     "PPOUnitResult",
@@ -34,6 +39,8 @@ PPO_EPOCHS: Final = 4
 PPO_BATCH_SIZE: Final = 256
 _TORCH_THREADS: Final = 1
 
+type TrainablePolicyArchitecture = PolicyArchitecture | LocalMLPV2Architecture
+
 
 @dataclass(frozen=True, slots=True)
 class PPOUnitMetrics:
@@ -44,6 +51,7 @@ class PPOUnitMetrics:
     epochs: int
     optimizer_steps: int
     diagnostics: dict[str, float]
+    role_counts: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,12 +66,16 @@ def create_maskable_ppo(
     *,
     seed: int,
     n_steps: int = ROLLOUT_TRANSITIONS,
-    architecture: PolicyArchitecture = PolicyArchitecture.MLP,
+    architecture: TrainablePolicyArchitecture = PolicyArchitecture.MLP,
 ) -> MaskablePPO:
     """Build one fixed CPU-only PPO candidate selected by server benchmark code."""
 
     torch.set_num_threads(_TORCH_THREADS)
-    specification = architecture_specification(architecture)
+    specification = (
+        architecture_specification(architecture)
+        if isinstance(architecture, PolicyArchitecture)
+        else local_mlp_v2_specification(architecture)
+    )
     return MaskablePPO(
         MaskableMultiInputActorCriticPolicy,
         env,
@@ -119,6 +131,25 @@ def _total_counter(env: DinoRLSingleAgentEnv | VecEnv, attribute: str) -> int:
     return value
 
 
+def _role_counts(env: DinoRLSingleAgentEnv | VecEnv) -> dict[str, int]:
+    values = (
+        env.get_attr("training_role_counts")
+        if isinstance(env, VecEnv)
+        else [env.training_role_counts]
+    )
+    counts = {"learner_first": 0, "learner_second": 0, "learner_a": 0, "learner_b": 0}
+    for value in values:
+        if (
+            not isinstance(value, dict)
+            or set(value) != set(counts)
+            or any(type(number) is not int or number < 0 for number in value.values())
+        ):
+            raise RuntimeError("environment has invalid training role counters")
+        for name, number in value.items():
+            counts[name] += number
+    return counts
+
+
 def train_one_unit(
     model: MaskablePPO,
     env: DinoRLSingleAgentEnv | VecEnv,
@@ -129,6 +160,7 @@ def train_one_unit(
 
     learner_before = _total_counter(env, "total_learner_transitions")
     engine_before = _total_counter(env, "total_engine_actions")
+    roles_before = _role_counts(env)
     model.learn(
         total_timesteps=ROLLOUT_TRANSITIONS,
         reset_num_timesteps=False,
@@ -136,6 +168,8 @@ def train_one_unit(
     )
     learner_transitions = _total_counter(env, "total_learner_transitions") - learner_before
     engine_actions = _total_counter(env, "total_engine_actions") - engine_before
+    roles_after = _role_counts(env)
+    role_counts = {name: roles_after[name] - roles_before[name] for name in roles_before}
     if learner_transitions != ROLLOUT_TRANSITIONS:
         raise RuntimeError(
             f"PPO unit collected an unexpected number of learner transitions: {learner_transitions}"
@@ -148,6 +182,7 @@ def train_one_unit(
             epochs=PPO_EPOCHS,
             optimizer_steps=optimizer_steps,
             diagnostics=_finite_diagnostics(model),
+            role_counts=role_counts,
         )
     )
 

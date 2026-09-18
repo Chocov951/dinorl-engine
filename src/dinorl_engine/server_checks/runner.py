@@ -5,15 +5,18 @@ from __future__ import annotations
 import hashlib
 import importlib
 import importlib.metadata
+import json
 import os
 import platform
 import statistics
 import subprocess
 import sys
 import uuid
+from collections.abc import Callable
 from pathlib import Path
 from typing import Final
 
+from dinorl_engine.rl.policies.local_mlp_v2 import LOCAL_MLP_V2_ARCHITECTURES
 from dinorl_engine.server_checks.manifests import create_archive
 from dinorl_engine.server_checks.profiles import (
     STANDARD_PROFILE,
@@ -63,10 +66,14 @@ from dinorl_engine.server_checks.suites.rl_s5 import (
 from dinorl_engine.server_checks.suites.rl_s5 import (
     DEVELOPMENT_SEEDS,
     UNITS_PER_SEED,
+    S5Progress,
     comparison_passed,
 )
 from dinorl_engine.server_checks.suites.rl_s5 import (
     run_measurement as run_s5_measurement,
+)
+from dinorl_engine.server_checks.suites.rl_s5_v2 import (
+    run_measurement as run_s5_v2_measurement,
 )
 
 __all__ = [
@@ -75,6 +82,8 @@ __all__ = [
     "collect_provenance",
     "ensure_clean_tracked_worktree",
     "repository_root",
+    "run_local_rl_s5_diagnostic",
+    "run_local_rl_s5_v2_diagnostic",
     "run_suite",
     "verify_import_provenance",
 ]
@@ -636,10 +645,16 @@ def _run_rl_s4(*, profile: DependencyProfile, root: Path, output_dir: Path) -> d
     }
 
 
-def _run_rl_s5(*, profile: DependencyProfile, root: Path, output_dir: Path) -> dict[str, object]:
+def _run_rl_s5(
+    *,
+    profile: DependencyProfile,
+    root: Path,
+    output_dir: Path,
+    progress: Callable[[S5Progress], None] | None,
+) -> dict[str, object]:
     """Run or resume the full six-run architecture comparison in a persistent work directory."""
 
-    measurement = run_s5_measurement(output_dir / ".rl-s5-work")
+    measurement = run_s5_measurement(output_dir / ".rl-s5-work", progress=progress)
     passed = comparison_passed(measurement)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
@@ -680,8 +695,103 @@ def _run_rl_s5(*, profile: DependencyProfile, root: Path, output_dir: Path) -> d
     }
 
 
+def run_local_rl_s5_diagnostic(
+    *, output_dir: Path, progress: Callable[[S5Progress], None] | None = None
+) -> dict[str, object]:
+    """Run RL-S5 locally for diagnosis, never as a target-server gate result."""
+
+    measurement = run_s5_measurement(output_dir / ".rl-s5-local-work", progress=progress)
+    report = {
+        "format": "dinorl-local-rl-s5-diagnostic-v1",
+        "classification": "diagnostic_only_not_server_evidence",
+        "configuration": {
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "epochs": 4,
+            "batch_size": 256,
+            "units_per_seed": UNITS_PER_SEED,
+            "seeds": list(DEVELOPMENT_SEEDS),
+            "architectures": [architecture.value for architecture in RL_S5_ARCHITECTURES],
+        },
+        "measurement": measurement,
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report_path = output_dir / "rl-s5-local-diagnostic.json"
+    report_path.write_text(
+        json.dumps(report, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    return {
+        "classification": "diagnostic_only_not_server_evidence",
+        "report": str(report_path),
+        "status": "completed",
+    }
+
+
+def run_local_rl_s5_v2_diagnostic(
+    *,
+    output_dir: Path,
+    baseline_work_directory: Path,
+    baseline_report_path: Path | None = None,
+    progress: Callable[[S5Progress], None] | None = None,
+) -> dict[str, object]:
+    """Run the three-candidate local MLP V2 benchmark and its pairwise tournament."""
+
+    baseline_report = (
+        output_dir / "rl-s5-local-diagnostic.json"
+        if baseline_report_path is None
+        else baseline_report_path
+    )
+    measurement = run_s5_v2_measurement(
+        output_dir / ".rl-s5-v2-local-work",
+        baseline_work_directory=baseline_work_directory,
+        baseline_report_path=baseline_report,
+        progress=progress,
+    )
+    report = {
+        "format": "dinorl-local-rl-s5-v2-diagnostic-v1",
+        "classification": "diagnostic_only_not_server_evidence",
+        "configuration": {
+            "baseline_architecture": "mlp-v1",
+            "candidate_architectures": [
+                architecture.value for architecture in LOCAL_MLP_V2_ARCHITECTURES
+            ],
+            "backend": SELECTED_CONFIGURATION.backend.value,
+            "n_envs": SELECTED_CONFIGURATION.n_envs,
+            "n_steps": SELECTED_CONFIGURATION.n_steps,
+            "rollout_transitions": 2048,
+            "epochs": 4,
+            "batch_size": 256,
+            "units_per_seed": UNITS_PER_SEED,
+            "seeds": list(DEVELOPMENT_SEEDS),
+            "self_play": False,
+        },
+        "measurement": measurement,
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report_path = output_dir / "rl-s5-v2-local-diagnostic.json"
+    report_path.write_text(
+        json.dumps(report, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    return {
+        "classification": "diagnostic_only_not_server_evidence",
+        "report": str(report_path),
+        "status": "completed",
+    }
+
+
 def run_suite(
-    *, suite: str, profile: DependencyProfile = STANDARD_PROFILE, root: Path, output_dir: Path
+    *,
+    suite: str,
+    profile: DependencyProfile = STANDARD_PROFILE,
+    root: Path,
+    output_dir: Path,
+    progress: Callable[[S5Progress], None] | None = None,
 ) -> dict[str, object]:
     """Run one supported gate only after verifying a clean tracked worktree."""
 
@@ -697,7 +807,7 @@ def run_suite(
     if suite == "RL-S4":
         return _run_rl_s4(profile=profile, root=root, output_dir=output_dir)
     if suite == "RL-S5":
-        return _run_rl_s5(profile=profile, root=root, output_dir=output_dir)
+        return _run_rl_s5(profile=profile, root=root, output_dir=output_dir, progress=progress)
     run_id = uuid.uuid4().hex
     result: dict[str, object] = {
         "format": "dinorl-server-result-v1",

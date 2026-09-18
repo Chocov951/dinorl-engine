@@ -1,0 +1,12 @@
+{
+  "format": "dinorl-s5c-config-v1",
+  "run_id": "rl-s5c-calibration-v1",
+  "output_directory": "../../artifacts/rl/s5c/rl-s5c-calibration-v1",
+  "architecture": "mlp-compact-v2",
+  "max_rounds": 30,
+  "training_opponent": "random-legal-v1",
+  "calibration_seeds": [19, 20, 21],
+  "production_seeds": [19, 20, 21, 22, 23],
+  "evaluation_seeds": [101, 102, 103],
+  "max_units": 147
+}
