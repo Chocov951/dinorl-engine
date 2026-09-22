@@ -8,4 +8,12 @@ __pycache__/
 *.egg-info/
 htmlcov/
 artifacts/rl/*
+!artifacts/rl/RL-S5-registry.json
+!artifacts/rl/beta-validation-pool-v1/
+artifacts/rl/beta-validation-pool-v1/*
+!artifacts/rl/beta-validation-pool-v1/manifest.json
+!artifacts/rl/starter-zero-v1/
+artifacts/rl/starter-zero-v1/*
+!artifacts/rl/starter-zero-v1/manifest.json
+!artifacts/rl/starter-zero-v1/sha256sums.txt
 benchmarks/server/*

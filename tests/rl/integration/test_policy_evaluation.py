@@ -7,6 +7,7 @@ from dinorl_engine.rl.env.single_agent import DinoRLSingleAgentEnv
 from dinorl_engine.rl.evaluation.match import run_evaluation_game
 from dinorl_engine.rl.evaluation.policy import MaskablePolicyController
 from dinorl_engine.rl.evaluation.protocol import EvaluationGameSpec
+from dinorl_engine.rl.s5c.rewards import specialist_rewards
 from dinorl_engine.rl.training.unit import create_maskable_ppo
 
 
@@ -51,5 +52,54 @@ def test_evaluation_game_collects_only_aggregate_metrics_and_an_optional_replay(
         assert result.metrics["action_distribution"]
         assert result.metrics["average_legal_actions"] >= 1.0
         assert result.replay is not None
+    finally:
+        environment.close()
+
+
+def test_game_id_reproduces_actions_and_report_options_do_not_change_the_rng() -> None:
+    environment = DinoRLSingleAgentEnv(seed=23)
+    model = create_maskable_ppo(environment, seed=23)
+    specification = EvaluationGameSpec(
+        seed=101,
+        opponent_id="random-legal-v1",
+        learner_actor=Actor.A,
+        first_actor=Actor.B,
+        game_id="a2/reproducible-game-1",
+        evaluation_seed=101,
+    )
+    try:
+        compact = run_evaluation_game(
+            model,
+            specification,
+            deterministic=False,
+            diagnostic_replay=False,
+            learner_policy_id="controller-s23-u5",
+            checkpoint_id="unit-5",
+            training_seed=23,
+            reward_program=specialist_rewards()["controller"],
+        )
+        diagnostic = run_evaluation_game(
+            model,
+            specification,
+            deterministic=False,
+            diagnostic_replay=True,
+            learner_policy_id="controller-s23-u5",
+            checkpoint_id="unit-5",
+            training_seed=23,
+            reward_program=specialist_rewards()["controller"],
+        )
+
+        assert compact.record["game_id"] == specification.game_id
+        assert compact.record["action_trace"] == diagnostic.record["action_trace"]
+        assert compact.record["outcome"] in {"win", "draw", "loss"}
+        assert compact.record["learner_role"] == "second"
+        assert compact.record["learner_side"] == "A"
+        assert isinstance(compact.record["events"], list)
+        assert isinstance(compact.record["terminal_return"], float)
+        assert isinstance(compact.record["auxiliary_return"], float)
+        assert isinstance(compact.record["auxiliary_by_rule"], dict)
+        assert diagnostic.replay is not None
+        assert diagnostic.replay["game_id"] == specification.game_id
+        assert diagnostic.replay["checkpoint_id"] == "unit-5"
     finally:
         environment.close()

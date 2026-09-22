@@ -1,0 +1,18 @@
+{
+  "format": "dinorl-s5c-a2-config-v1",
+  "phase": "RL-S5c-A2",
+  "run_id": "rl-s5c-calibration-v2",
+  "output_directory": "../../artifacts/rl/s5c/rl-s5c-calibration-v2",
+  "architecture": "mlp-compact-v2",
+  "max_rounds": 30,
+  "training_opponent": "random-legal-v1",
+  "calibration_seeds": [19, 20, 21],
+  "production_seeds": [19, 20, 21, 22, 23],
+  "evaluation_seeds": [101, 102, 103],
+  "max_units": 147,
+  "rl_s5b_pool": "../../artifacts/rl/s5b/rl-s5b-default/pools/f60caef5f68b68cd06c29a2794cdd5054ae353039100e75dbe73e662aa1113db.json",
+  "rl_s5b_pool_sha256": "f60caef5f68b68cd06c29a2794cdd5054ae353039100e75dbe73e662aa1113db",
+  "random_confrontations": 200,
+  "strong_pool_confrontations": 20,
+  "diagnostic_replay_sample": 5
+}

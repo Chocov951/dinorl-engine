@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dinorl_engine.core.constants import Actor
-from dinorl_engine.rl.evaluation.protocol import EvaluationGameSpec, derive_evaluation_seed
+from dinorl_engine.rl.evaluation.protocol import EvaluationGameSpec, derive_game_stream_seed
 
 __all__ = ["paired_game_specs"]
 
@@ -17,13 +17,28 @@ def paired_game_specs(
         raise ValueError("confrontations must be a positive integer")
     games: list[EvaluationGameSpec] = []
     for index in range(confrontations):
-        game_seed = derive_evaluation_seed(
-            seed, suite="publication", opponent_id=opponent_id, index=index
-        )
+        pair_id = f"publication/{seed}/{opponent_id}/{index}"
+        game_seed = derive_game_stream_seed(pair_id, policy_id="engine")
         games.extend(
             (
-                EvaluationGameSpec(game_seed, opponent_id, Actor.A, Actor.A),
-                EvaluationGameSpec(game_seed, opponent_id, Actor.A, Actor.B),
+                EvaluationGameSpec(
+                    game_seed,
+                    opponent_id,
+                    Actor.A,
+                    Actor.A,
+                    f"{pair_id}/first-A",
+                    seed,
+                    pair_id,
+                ),
+                EvaluationGameSpec(
+                    game_seed,
+                    opponent_id,
+                    Actor.A,
+                    Actor.B,
+                    f"{pair_id}/first-B",
+                    seed,
+                    pair_id,
+                ),
             )
         )
     return tuple(games)

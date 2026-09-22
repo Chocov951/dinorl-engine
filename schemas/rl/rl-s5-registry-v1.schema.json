@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/rl-s5-registry-v1.schema.json",
+  "title": "RL-S5 artifact registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "entries"],
+  "properties": {
+    "format": {"const": "rl-s5-registry-v1"},
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "nullableString": {"type": ["string", "null"]},
+    "nullableInteger": {"type": ["integer", "null"], "minimum": 0},
+    "nullableSha256": {
+      "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[a-f0-9]{64}$"}]
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "phase", "kind", "status", "purpose", "architecture_id", "training_seed", "checkpoint_unit", "sha256", "config_sha256", "reward_sha256", "engine_version", "observation_version", "action_version", "rules_version", "relative_or_external_location", "availability", "tags", "known_limitations", "source_report"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"},
+        "phase": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "architecture_id": {"$ref": "#/$defs/nullableString"},
+        "training_seed": {"$ref": "#/$defs/nullableInteger"},
+        "checkpoint_unit": {"$ref": "#/$defs/nullableInteger"},
+        "sha256": {"$ref": "#/$defs/nullableSha256"},
+        "config_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "reward_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "engine_version": {"const": "0.1.0"},
+        "observation_version": {"const": "rl-observation-v1"},
+        "action_version": {"const": "1.0.0"},
+        "rules_version": {"const": "1.0.0"},
+        "relative_or_external_location": {"type": "string", "minLength": 1},
+        "availability": {"enum": ["local-present", "server-present", "external-archive", "metadata-only", "missing"]},
+        "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "known_limitations": {"type": "array", "items": {"type": "string"}},
+        "source_report": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -35,6 +35,7 @@ from dinorl_engine.rl.env.observation import (
 from dinorl_engine.rl.rewards.reference import reference_reward
 from dinorl_engine.rl.rewards.runtime import CompiledReward
 from dinorl_engine.rl.rewards.transition import public_reward_transition
+from dinorl_engine.rl.s5c.a3 import EpisodeAuxiliaryBudget, bounded_safe_feed_adjustment
 
 __all__ = ["DinoRLSingleAgentEnv", "IllegalActionEscapeError", "TrainingOpponentPool"]
 
@@ -99,6 +100,7 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         environment_index: int = 0,
         reward_program: CompiledReward | None = None,
         training_opponent_pool: TrainingOpponentPool | None = None,
+        safe_feed_episode_cap: float | None = None,
     ) -> None:
         super().__init__()
         self._base_seed = _validate_seed(seed)
@@ -125,6 +127,11 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             "learner_b": 0,
         }
         self._reward_program = reward_program
+        if safe_feed_episode_cap is not None and safe_feed_episode_cap <= 0.0:
+            raise ValueError("safe_feed_episode_cap must be positive")
+        self._safe_feed_episode_cap = safe_feed_episode_cap
+        self._safe_feed_budget: EpisodeAuxiliaryBudget | None = None
+        self._resource_generations: dict[str, int] = {}
         self._reward_evaluator: Callable[[dict[str, object]], float] | None = (
             reward_program.vm_evaluator if reward_program is not None else None
         )
@@ -278,6 +285,12 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         self._learner_transitions = 0
         self._engine_actions = 0
         self._engine_action_history = []
+        self._safe_feed_budget = (
+            EpisodeAuxiliaryBudget(self._safe_feed_episode_cap)
+            if self._safe_feed_episode_cap is not None
+            else None
+        )
+        self._resource_generations = {}
         self._play_opponent_turn(collect_reward=False)
         return self._observation(), self._info()
 
@@ -336,6 +349,9 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             "numpy_rng": copy.deepcopy(self.np_random.bit_generator.state),
             "training_role_counts": dict(self._training_role_counts),
         }
+        if self._safe_feed_budget is not None:
+            state["a3_reward_budget"] = self._safe_feed_budget.to_mapping()
+            state["a3_resource_generations"] = dict(self._resource_generations)
         if self._training_opponent_pool is None:
             return state
         selection_seed = self._opponent_selection_seed
@@ -397,7 +413,14 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         }
         if not standard_format:
             required |= {"opponent_selection_seed", "opponent_state"}
-        allowed = (required, required | {"training_role_counts"})
+        optional = {"training_role_counts"}
+        a3_optional = {"a3_reward_budget", "a3_resource_generations"}
+        allowed = (
+            required,
+            required | optional,
+            required | a3_optional,
+            required | optional | a3_optional,
+        )
         if set(recovery) not in allowed:
             raise ValueError("single-agent recovery state has unexpected fields")
         base_seed = recovery["base_seed"]
@@ -411,6 +434,20 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
         opponent_id = recovery["opponent_id"]
         numpy_rng = recovery["numpy_rng"]
         training_role_counts = recovery.get("training_role_counts")
+        reward_budget = recovery.get("a3_reward_budget")
+        resource_generations = recovery.get("a3_resource_generations")
+        if (reward_budget is None) != (resource_generations is None):
+            raise ValueError("single-agent A3 recovery budget is incomplete")
+        if (reward_budget is None) != (self._safe_feed_episode_cap is None):
+            raise ValueError("single-agent A3 recovery budget configuration differs")
+        if resource_generations is not None and (
+            not isinstance(resource_generations, dict)
+            or any(
+                not isinstance(name, str) or type(generation) is not int or generation < 0
+                for name, generation in resource_generations.items()
+            )
+        ):
+            raise ValueError("single-agent A3 resource generations are invalid")
         if (
             type(base_seed) is not int
             or not 0 <= base_seed <= _MAX_SEED
@@ -499,6 +536,20 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
             if isinstance(training_role_counts, dict)
             else {name: 0 for name in expected_roles}
         )
+        if reward_budget is None:
+            self._safe_feed_budget = None
+            self._resource_generations = {}
+        else:
+            try:
+                self._safe_feed_budget = EpisodeAuxiliaryBudget.from_mapping(reward_budget)
+            except RuntimeError as error:
+                raise ValueError("single-agent A3 recovery budget is invalid") from error
+            if self._safe_feed_budget.safe_feed_cap != self._safe_feed_episode_cap:
+                raise ValueError("single-agent A3 safe-feed cap differs")
+            assert isinstance(resource_generations, dict)
+            self._resource_generations = {
+                str(name): int(generation) for name, generation in resource_generations.items()
+            }
         try:
             self.np_random.bit_generator.state = copy.deepcopy(numpy_rng)
         except (TypeError, ValueError) as error:
@@ -511,17 +562,25 @@ class DinoRLSingleAgentEnv(gym.Env[Observation, int]):
 
         result = self.engine.result if self.engine.is_terminal else None
         if self._reward_evaluator is not None:
-            return self._reward_evaluator(
-                public_reward_transition(
-                    before=before,
-                    after=self.engine.snapshot_public(),
-                    transition=transition,
-                    learner_actor=self._learner(),
-                    first_actor=self._first(),
-                    result=result,
-                    legal_actions=legal_actions,
-                )
+            reward_transition = public_reward_transition(
+                before=before,
+                after=self.engine.snapshot_public(),
+                transition=transition,
+                learner_actor=self._learner(),
+                first_actor=self._first(),
+                result=result,
+                legal_actions=legal_actions,
             )
+            reward = self._reward_evaluator(reward_transition)
+            if self._safe_feed_budget is not None:
+                reward += bounded_safe_feed_adjustment(
+                    transition=transition,
+                    reward_transition=reward_transition,
+                    learner_actor=self._learner(),
+                    budget=self._safe_feed_budget,
+                    generations=self._resource_generations,
+                )
+            return reward
         return reference_reward(transition, learner_actor=self._learner(), result=result)
 
     def _play_opponent_turn(self, *, collect_reward: bool) -> float:

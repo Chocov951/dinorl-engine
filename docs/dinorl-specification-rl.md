@@ -605,7 +605,17 @@ Deux architectures sont implémentées uniquement pour le benchmark initial.
 
 Dans les deux cas, les têtes communes sont des projections directes `64 → 9` pour la politique et `64 → 1` pour la valeur. Les encodeurs possèdent respectivement environ 93 248 paramètres pour le MLP et 91 936 pour le CNN, avant ces têtes identiques. Leurs dimensions sont gelées pendant `RL-S4` et `RL-S5`. Le rapport consigne le nombre exact de paramètres, les FLOPs approximatifs et le temps d’inférence.
 
-Après `RL-S5`, une seule architecture est retenue : celle qui apprend le plus vite sur le serveur. Les joueurs ne choisissent pas leur architecture dans la V1.
+Après `RL-S5`, l'architecture V1 retenue est `mlp-compact-v2` (`663 → 64 → 64`).
+Elle a fourni le meilleur compromis initial entre vitesse d'apprentissage, stabilité
+inter-seed et niveau observé. Le CNN et les autres MLP restent des expériences et des
+adversaires de validation ; les joueurs ne choisissent pas leur architecture dans la V1.
+
+Pour la première bêta, chaque joueur part du même snapshot initial non entraîné
+`starter-zero-v1`. La création d'une branche copie uniquement ces poids et le manifeste
+d'architecture, puis crée un optimiseur neuf, des RNG propres et des compteurs nuls. Aucun
+starter spécialisé entraîné n'est publié. Les politiques historiques sont soit des bots
+officiels, soit des adversaires de validation cachés, soit des diagnostics explicitement
+étiquetés ; une politique diagnostique n'est jamais présentée comme adversaire équilibré.
 
 ## 12. Paramètres accessibles aux joueurs
 
@@ -1921,6 +1931,12 @@ Après import, produire `architecture-decision.md`. Si vitesse, temps mur et sco
 - refus des incompatibilités et imports externes ;
 - suite `RL-S6`.
 
+RL-L8 réutilise `mlp-compact-v2`, `starter-zero-v1`, le registre RL-S5 et
+`beta-validation-pool-v1`. La recherche de starters spécialisés, dont `controller`, est
+reportée après la V1. La configuration canonique RL-S6 doit être figée par une décision
+séparée avant toute exécution sur cinq seeds ; aucune configuration issue de RL-S5c n'est
+promue implicitement.
+
 **Tests avant code**
 
 - chaque seuil et frontière ;
@@ -1937,6 +1953,22 @@ ACTION UTILISATEUR REQUISE — CHECKPOINT SERVEUR RL-S6
 ```
 
 La V1 n’est pas déclarée techniquement apprenante avant import d’un rapport montrant au moins 4/5 seeds conformes.
+
+#### Clôture RL-S5 et sources de vérité associées
+
+`RL-S5`, `RL-S5b` et `RL-S5c` sont clos avec l'architecture officielle
+`mlp-compact-v2` et la décision spécialiste `NO_ELIGIBLE_VARIANT`. Les sources de vérité
+de cette clôture sont :
+
+- `docs/rl/RL-S5-retrospective.md` pour les enseignements et décisions humaines ;
+- `artifacts/rl/RL-S5-registry.json` pour la provenance des campagnes et artefacts ;
+- `artifacts/rl/beta-validation-pool-v1/manifest.json` pour les adversaires de diagnostic ;
+- `artifacts/rl/starter-zero-v1/manifest.json` pour l'origine commune de la bêta ;
+- `reports/rl/RL-S5-closure-report.md` pour l'audit de transition.
+
+`RL-S5` est `RL_S5_CLOSED_READY_FOR_RL_L8`. `RL-L8` et sa campagne serveur `RL-S6`
+constituent la prochaine étape. `RL-S6` reste non exécuté et ne peut être déclaré réussi
+avant une validation conforme sur cinq seeds.
 
 ### RL-L9 — Orchestration complète et progression
 

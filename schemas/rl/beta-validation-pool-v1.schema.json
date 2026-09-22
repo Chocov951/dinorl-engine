@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/beta-validation-pool-v1.schema.json",
+  "title": "Immutable beta validation pool v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "immutable", "policies", "excluded", "strata", "pool_sha256"],
+  "properties": {
+    "format": {"const": "beta-validation-pool-v1"},
+    "immutable": {"const": true},
+    "pool_sha256": {"$ref": "#/$defs/sha256"},
+    "policies": {"type": "array", "items": {"$ref": "#/$defs/policy"}},
+    "excluded": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reason"],
+        "properties": {"id": {"type": "string"}, "reason": {"type": "string"}}
+      }
+    },
+    "strata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rules-baseline", "weak-learned", "intermediate-learned", "strong-learned", "architecture-variant", "specialized-carcass", "specialized-ko", "temporizer-diagnostic", "exploiter-diagnostic", "stochastic-instability-diagnostic"],
+      "properties": {
+        "rules-baseline": {"$ref": "#/$defs/idList"},
+        "weak-learned": {"$ref": "#/$defs/idList"},
+        "intermediate-learned": {"$ref": "#/$defs/idList"},
+        "strong-learned": {"$ref": "#/$defs/idList"},
+        "architecture-variant": {"$ref": "#/$defs/idList"},
+        "specialized-carcass": {"$ref": "#/$defs/idList"},
+        "specialized-ko": {"$ref": "#/$defs/idList"},
+        "temporizer-diagnostic": {"$ref": "#/$defs/idList"},
+        "exploiter-diagnostic": {"$ref": "#/$defs/idList"},
+        "stochastic-instability-diagnostic": {"$ref": "#/$defs/idList"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "idList": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "weights_sha256", "implementation_sha256", "architecture_id", "checkpoint_unit", "source_campaign", "location", "stratum", "measured_strength", "reference_population", "observed_style", "known_defects", "usage", "label_reasons"],
+      "properties": {
+        "id": {"type": "string"},
+        "weights_sha256": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "implementation_sha256": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "architecture_id": {"type": ["string", "null"]},
+        "checkpoint_unit": {"type": ["integer", "null"], "minimum": 0},
+        "source_campaign": {"type": "string"},
+        "location": {"type": "string"},
+        "stratum": {"type": "string"},
+        "measured_strength": {"type": "string"},
+        "reference_population": {"type": "string"},
+        "observed_style": {"type": "string"},
+        "known_defects": {"type": "array", "items": {"type": "string"}},
+        "usage": {"enum": ["public-bot", "hidden-evaluation", "diagnostic-only"]},
+        "label_reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

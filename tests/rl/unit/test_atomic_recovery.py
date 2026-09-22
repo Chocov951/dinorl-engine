@@ -93,3 +93,31 @@ def test_discard_before_does_not_fail_when_a_sync_client_locks_stale_recovery(
     latest = store.load_latest()
     assert latest is not None
     assert latest.directory == current.directory
+
+
+def test_commit_retries_a_transient_windows_access_denial_during_publish(
+    tmp_path: Path,
+) -> None:
+    store = AtomicRecoveryStore(tmp_path / "recovery")
+    real_replace = __import__("os").replace
+    attempts = 0
+
+    def intermittently_locked(source: Path, destination: Path) -> None:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            error = PermissionError(13, "Access denied", str(destination))
+            error.winerror = 5
+            raise error
+        real_replace(source, destination)
+
+    with (
+        patch("dinorl_engine.rl.training.runner.os.replace", side_effect=intermittently_locked),
+        patch("dinorl_engine.rl.training.runner.time.sleep") as sleep,
+    ):
+        record = store.commit_json_state(unit_id="unit-1", sequence=1, state=_state(1))
+
+    assert attempts == 3
+    assert sleep.call_count == 2
+    assert record.directory.name == "unit-1"
+    assert store.load_latest() == record

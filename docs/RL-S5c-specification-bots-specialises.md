@@ -1,5 +1,36 @@
 # RL-S5c — Bots spécialisés de départ et de référence
 
+## Amendement V1 normatif — RL-S5c-A3
+
+Cet amendement remplace toute mention contradictoire des campagnes A1/A2 ci-dessous.
+La V1 ne comporte plus que deux profils actifs : `scavenger` et `predator`. L'identifiant
+technique `predator` reste stable et son libellé public est **Agressif**. `controller` est
+conservé dans le code et les artefacts historiques avec le statut `deferred_post_v1`, mais
+il est retiré des campagnes, critères de fin, familles, benchmarks et interfaces de
+production V1.
+
+Cette décision vient de son échec du gate sur 3/3 seeds, de scores RL-S5b compris entre
+0,056 et 0,110, de comportements fréquemment temporisateurs et d'une identité difficile à
+obtenir avec le Reward DSL V1. L'anomalie historique `useful_shove_rate > 1` est suivie
+comme dette technique séparée et ne bloque pas A3.
+
+La production ultérieure attend exactement deux références publiques, deux starters
+clonables et au moins deux variantes cachées par famille. Le futur benchmark ajoute donc
+deux références et quatre variantes cachées au pool RL-S5b conservé immuable.
+
+A3 remplace le gate d'arrêt historique par un gate composite : compétence élémentaire,
+style absolu et comparatif, score held-out RL-S5b dans `[0,25 ; 0,50]`, et robustesse sans
+reward hacking, temporisation ni effondrement stochastique. L'arrêt intervient au second
+passage composite consécutif. Le gate historique seul ne déclenche plus aucun arrêt.
+
+Le pool RL-S5b est séparé avant expérience en adversaires d'entraînement et adversaires
+held-out sans recouvrement. Seul le held-out décide le gate ; le pool complet reste
+diagnostique. Les bots déterministes restent exclusivement réservés à l'évaluation.
+
+RL-S5c-A3 suit obligatoirement `A3-CONTROL`, puis `A3-PILOT`, puis `A3-CONFIRM`, avec un
+checkpoint humain entre chaque phase. Aucune production cinq-seeds et aucun RL-S5c-B ne
+sont autorisés pendant A3.
+
 ## 1. Objet
 
 `RL-S5c` produit trois familles de politiques apprises, compétentes mais volontairement incomplètes :

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/zero-starter-manifest-v1.schema.json",
+  "title": "Untrained common beta starter manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "snapshot_id", "architecture_id", "initialization_seed", "training_units", "learner_transitions", "optimizer_steps", "parent_checkpoint", "trained", "purpose", "contracts", "tensor_count", "files"],
+  "properties": {
+    "format": {"const": "dinorl-zero-starter-manifest-v1"},
+    "snapshot_id": {"const": "starter-zero-v1"},
+    "architecture_id": {"const": "mlp-compact-v2"},
+    "initialization_seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "training_units": {"const": 0},
+    "learner_transitions": {"const": 0},
+    "optimizer_steps": {"const": 0},
+    "parent_checkpoint": {"type": "null"},
+    "trained": {"const": false},
+    "purpose": {"const": "beta-player-initialization"},
+    "tensor_count": {"type": "integer", "minimum": 1},
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine_version", "rules_version", "action_version", "observation_version"],
+      "properties": {
+        "engine_version": {"const": "0.1.0"},
+        "rules_version": {"const": "1.0.0"},
+        "action_version": {"const": "1.0.0"},
+        "observation_version": {"const": "rl-observation-v1"}
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["weights.safetensors"],
+      "properties": {"weights.safetensors": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+    }
+  }
+}

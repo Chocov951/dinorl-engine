@@ -78,6 +78,7 @@ def make_environment_factory(
     *,
     training_opponent_pool: TrainingOpponentPool | None = None,
     reward_program: CompiledReward | None = None,
+    safe_feed_episode_cap: float | None = None,
 ) -> Callable[[], DinoRLSingleAgentEnv]:
     """Create a picklable factory with a unique deterministic RNG stream."""
 
@@ -87,6 +88,7 @@ def make_environment_factory(
         environment_index=environment_index,
         training_opponent_pool=training_opponent_pool,
         reward_program=reward_program,
+        safe_feed_episode_cap=safe_feed_episode_cap,
     )
 
 
@@ -95,6 +97,7 @@ def create_vector_environment(
     *,
     training_opponent_pool: TrainingOpponentPool | None = None,
     reward_program: CompiledReward | None = None,
+    safe_feed_episode_cap: float | None = None,
 ) -> VecEnv:
     """Create one configured backend without exposing process choices to players."""
 
@@ -107,6 +110,7 @@ def create_vector_environment(
             environment_index,
             training_opponent_pool=training_opponent_pool,
             reward_program=reward_program,
+            safe_feed_episode_cap=safe_feed_episode_cap,
         )
         for environment_index in range(configuration.n_envs)
     ]

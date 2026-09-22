@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import json
+import os
+from unittest.mock import patch
+
 import pytest
 
+from dinorl_engine.rl.s5c import calibration
 from dinorl_engine.rl.s5c.archive import create_calibration_archive
 from dinorl_engine.rl.s5c.calibration import CalibrationError, CalibrationSeedState
 from dinorl_engine.rl.s5c.config import S5cConfig
@@ -92,3 +97,24 @@ def test_complete_calibration_archive_is_importable_without_policy_weights(tmp_p
 
     assert imported["suite"] == "RL-S5c-A"
     assert imported["run_id"] == run_id
+
+
+def test_atomic_json_retries_a_transient_windows_access_denial(tmp_path) -> None:
+    destination = tmp_path / "state.json"
+    real_replace = os.replace
+    attempts = 0
+
+    def intermittently_locked(source: str, target: str) -> None:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            error = PermissionError(13, "Access denied", target)
+            error.winerror = 5
+            raise error
+        real_replace(source, target)
+
+    with patch("dinorl_engine.rl.s5c.calibration.os.replace", side_effect=intermittently_locked):
+        calibration._atomic_json(destination, {"unit": 153})
+
+    assert attempts == 3
+    assert json.loads(destination.read_text(encoding="utf-8")) == {"unit": 153}

@@ -18,6 +18,17 @@ class EvaluationGameSpec:
     opponent_id: str
     learner_actor: Actor
     first_actor: Actor
+    game_id: str = ""
+    evaluation_seed: int | None = None
+    pair_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.game_id and any(character.isspace() for character in self.game_id):
+            raise ValueError("game_id must not contain whitespace")
+        if self.evaluation_seed is not None and (
+            type(self.evaluation_seed) is not int or not 0 <= self.evaluation_seed < 2**32
+        ):
+            raise ValueError("evaluation_seed must be an unsigned 32-bit integer")
 
 
 def derive_evaluation_seed(seed: int, *, suite: str, opponent_id: str, index: int) -> int:

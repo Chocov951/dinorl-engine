@@ -48,6 +48,8 @@ __all__ = [
 
 _OPAQUE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
 _FORMAT = "dinorl-recovery-v1"
+_WINDOWS_TRANSIENT_RENAME_ERRORS = frozenset({5, 32, 33})
+_ATOMIC_RENAME_DELAYS_SECONDS = (0.05, 0.1, 0.2, 0.4) + (0.5,) * 60
 
 
 class CrashPoint(StrEnum):
@@ -115,6 +117,23 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _atomic_directory_replace(source: Path, destination: Path) -> None:
+    """Publish a directory despite short-lived Windows sync-client locks."""
+
+    for delay in (*_ATOMIC_RENAME_DELAYS_SECONDS, None):
+        try:
+            os.replace(source, destination)
+            return
+        except PermissionError as error:
+            if (
+                os.name != "nt"
+                or getattr(error, "winerror", None) not in _WINDOWS_TRANSIENT_RENAME_ERRORS
+                or delay is None
+            ):
+                raise
+            time.sleep(delay)
+
+
 def _canonical_json(value: Mapping[str, object]) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
@@ -123,8 +142,8 @@ class AtomicRecoveryStore:
     """Store immutable completed states; incomplete staging directories are never recovered."""
 
     def __init__(self, root: Path) -> None:
-        self._root = root
-        self._units = root / "units"
+        self._root = root.resolve()
+        self._units = self._root / "units"
         self._root.mkdir(parents=True, exist_ok=True)
         self._units.mkdir(exist_ok=True)
 
@@ -191,7 +210,7 @@ class AtomicRecoveryStore:
         _fsync_file(manifest_path)
         _fsync_directory(staging)
         self._crash_if(CrashPoint.MANIFEST_WRITTEN, crash_at)
-        os.replace(staging, destination)
+        _atomic_directory_replace(staging, destination)
         _fsync_directory(self._units)
         self._crash_if(CrashPoint.RENAMED, crash_at)
         record = self._read_record(destination)

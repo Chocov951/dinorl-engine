@@ -1,0 +1,18 @@
+{
+  "format": "dinorl-s5c-a3-config-v1",
+  "phase": "RL-S5c-A3",
+  "run_id": "rl-s5c-a3",
+  "output_directory": "../../artifacts/rl/s5c/rl-s5c-a3",
+  "architecture": "mlp-compact-v2",
+  "max_rounds": 30,
+  "control_seed": 20,
+  "pilot_seed": 20,
+  "confirm_seeds": [19, 20, 21],
+  "evaluation_seeds": [101, 102, 103],
+  "control_max_units": 147,
+  "specialist_max_units": 197,
+  "bootstrap_max_units": 147,
+  "rl_s5b_pool": "../../artifacts/rl/s5b/rl-s5b-default/pools/f60caef5f68b68cd06c29a2794cdd5054ae353039100e75dbe73e662aa1113db.json",
+  "rl_s5b_pool_sha256": "f60caef5f68b68cd06c29a2794cdd5054ae353039100e75dbe73e662aa1113db",
+  "safe_feed_episode_cap": 0.30
+}
