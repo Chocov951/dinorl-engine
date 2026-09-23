@@ -11,7 +11,7 @@
     "checkpoint_version": {"const": "training-checkpoint-v1"},
     "checkpoint_id": {"$ref": "#/$defs/opaque_id"},
     "experiment_id": {"$ref": "#/$defs/opaque_id"},
-    "architecture_id": {"enum": ["mlp-v1", "small-cnn-v1"]},
+    "architecture_id": {"enum": ["mlp-v1", "small-cnn-v1", "mlp-compact-v2"]},
     "reward": {"$ref": "#/$defs/reward"},
     "contracts": {"$ref": "#/$defs/contracts"},
     "files": {"$ref": "#/$defs/files"},

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/snapshot-registry-v1.schema.json",
+  "title": "DinoRL immutable snapshot registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "entries"],
+  "properties": {
+    "format": {"const": "rl-snapshot-registry-v1"},
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/entry"},
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "opaque_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "manifest_sha256", "relative_location"],
+      "properties": {
+        "snapshot_id": {"$ref": "#/$defs/opaque_id"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "relative_location": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"}
+      }
+    }
+  }
+}

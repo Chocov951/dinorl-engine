@@ -1,0 +1,10 @@
+{
+  "format": "rl-snapshot-registry-v1",
+  "entries": [
+    {
+      "snapshot_id": "s6-compact-001",
+      "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "relative_location": "s6-compact-001"
+    }
+  ]
+}

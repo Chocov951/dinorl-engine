@@ -28,7 +28,7 @@ _OUTPUT_FEATURES = 64
 
 
 class LocalMLPV2Architecture(StrEnum):
-    """Experimental identifiers which can never enter a V1 server archive."""
+    """V2 policy identifiers; only :attr:`COMPACT` is approved for V1 publication."""
 
     COMPACT = "mlp-compact-v2"
     BALANCED = "mlp-balanced-v2"

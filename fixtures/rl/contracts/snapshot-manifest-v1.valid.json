@@ -6,12 +6,23 @@
   "source_checkpoint_id": "checkpoint-01",
   "parent_snapshot_id": null,
   "architecture_id": "mlp-v1",
+  "architecture_dimensions": {
+    "encoder": [663, 64, 64],
+    "action_count": 9,
+    "policy_latent": 64,
+    "value_latent": 64
+  },
   "contracts": {
     "engine_version": "0.1.0",
     "rules_version": "1.0.0",
     "map_id": "arena_mvp_v1",
     "action_version": "1.0.0",
-    "observation_version": "rl-observation-v1"
+    "observation_version": "rl-observation-v1",
+    "engine_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "rules_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "map_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "action_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "observation_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
   },
   "torch_version": "2.7.1",
   "exporter_version": "1.0.0",

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v1/rl/s6-publication-evaluation-v1.schema.json",
+  "title": "DinoRL RL-S6 publication evaluation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "seed_count", "required_conforming_seed_count", "conforming_seed_count", "eligible", "seeds"],
+  "properties": {
+    "format": {"const": "rl-s6-publication-evaluation-v1"},
+    "seed_count": {"const": 5},
+    "required_conforming_seed_count": {"const": 4},
+    "conforming_seed_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "eligible": {"type": "boolean"},
+    "seeds": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"$ref": "#/$defs/seed"}
+    }
+  },
+  "$defs": {
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed", "deterministic", "stochastic", "stochastic_extension_required", "stochastic_extension", "evaluation_status", "conforming"],
+      "properties": {
+        "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+        "deterministic": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "object"}},
+        "stochastic": {"anyOf": [{"type": "null"}, {"type": "object"}]},
+        "stochastic_extension_required": {"type": "boolean"},
+        "stochastic_extension": {"anyOf": [{"type": "null"}, {"type": "object"}]},
+        "evaluation_status": {"enum": ["evaluated", "not_evaluated"]},
+        "conforming": {"type": "boolean"}
+      }
+    }
+  }
+}

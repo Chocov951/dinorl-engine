@@ -589,7 +589,7 @@ Il n’existe ni clipping de récompense, ni `VecNormalize`, ni planification au
 
 Deux architectures sont implémentées uniquement pour le benchmark initial.
 
-**MLP**
+**MLP historique (`mlp-v1`, non publiable en V1)**
 
 - aplatissement des 663 valeurs ;
 - couches `663 → 128 → 64` avec ReLU ;
@@ -605,7 +605,9 @@ Deux architectures sont implémentées uniquement pour le benchmark initial.
 
 Dans les deux cas, les têtes communes sont des projections directes `64 → 9` pour la politique et `64 → 1` pour la valeur. Les encodeurs possèdent respectivement environ 93 248 paramètres pour le MLP et 91 936 pour le CNN, avant ces têtes identiques. Leurs dimensions sont gelées pendant `RL-S4` et `RL-S5`. Le rapport consigne le nombre exact de paramètres, les FLOPs approximatifs et le temps d’inférence.
 
-Après `RL-S5`, l'architecture V1 retenue est `mlp-compact-v2` (`663 → 64 → 64`).
+Après `RL-S5`, l'architecture V1 retenue est exclusivement `mlp-compact-v2`
+(`663 → 64 → 64`). Le MLP historique `663 → 128 → 64` ne peut apparaître que
+dans les comparaisons archivées et jamais dans un manifeste ou un run `RL-S6`.
 Elle a fourni le meilleur compromis initial entre vitesse d'apprentissage, stabilité
 inter-seed et niveau observé. Le CNN et les autres MLP restent des expériences et des
 adversaires de validation ; les joueurs ne choisissent pas leur architecture dans la V1.

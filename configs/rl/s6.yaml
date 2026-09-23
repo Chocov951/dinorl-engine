@@ -1,0 +1,20 @@
+{
+  "format": "dinorl-s6-config-v1",
+  "phase": "RL-S6",
+  "run_id": "rl-s6-v1",
+  "output_directory": "../../artifacts/rl/s6/rl-s6-v1",
+  "architecture": "mlp-compact-v2",
+  "architecture_dimensions": [663, 64, 64],
+  "starter_directory": "../../artifacts/rl/starter-zero-v1",
+  "starter_weights_sha256": "50018e5c7b87ea369d0e01b4f2d4be9f1a24e3cab554c8170886fd6fb3c065e5",
+  "beta_validation_pool": "../../artifacts/rl/beta-validation-pool-v1/manifest.json",
+  "beta_validation_pool_sha256": "6cfc4b18669e3c1e830c5d1b65553e2f7e4be6092482de06ee0035fa14951d08",
+  "training_seeds": [19, 20, 21, 22, 23],
+  "evaluation_seed": 101,
+  "stochastic_evaluation_seed": 102,
+  "stochastic_extension_seed": 103,
+  "max_units": 147,
+  "evaluation_interval_units": 5,
+  "training_opponents": ["aggressive-v1", "prudent-v1", "opportunist-v1"],
+  "reward_dsl": "fn reward(t: Transition) -> Number {\n    return terminal_score(t, 1.0, -1.0, 0.0)\n         + 0.10 * carcass_points_gained(t, SELF)\n         - 0.10 * carcass_points_gained(t, OPPONENT)\n         + 0.05 * damage_dealt(t, SELF)\n         - 0.05 * damage_dealt(t, OPPONENT);\n}\n"
+}

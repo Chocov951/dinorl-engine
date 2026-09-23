@@ -1,0 +1,14 @@
+{
+  "format": "rl-s6-publication-evaluation-v1",
+  "seed_count": 5,
+  "required_conforming_seed_count": 4,
+  "conforming_seed_count": 4,
+  "eligible": true,
+  "seeds": [
+    {"seed": 1, "deterministic": [{}, {}], "stochastic": {}, "stochastic_extension_required": false, "stochastic_extension": null, "evaluation_status": "evaluated", "conforming": true},
+    {"seed": 2, "deterministic": [{}, {}], "stochastic": {}, "stochastic_extension_required": false, "stochastic_extension": null, "evaluation_status": "evaluated", "conforming": true},
+    {"seed": 3, "deterministic": [{}, {}], "stochastic": {}, "stochastic_extension_required": false, "stochastic_extension": null, "evaluation_status": "evaluated", "conforming": true},
+    {"seed": 4, "deterministic": [{}, {}], "stochastic": {}, "stochastic_extension_required": false, "stochastic_extension": null, "evaluation_status": "evaluated", "conforming": true},
+    {"seed": 5, "deterministic": [{}, {}], "stochastic": null, "stochastic_extension_required": false, "stochastic_extension": null, "evaluation_status": "not_evaluated", "conforming": false}
+  ]
+}

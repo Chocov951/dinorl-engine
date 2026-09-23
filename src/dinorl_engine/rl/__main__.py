@@ -52,6 +52,21 @@ def _build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--checkpoint", required=True)
     _add_json_option(publish)
 
+    s6 = commands.add_parser("s6", help="run the frozen five-seed RL-S6 beta validation")
+    s6_commands = s6.add_subparsers(dest="s6_command", required=True)
+    for name, help_text in (
+        ("preflight", "verify and freeze the canonical RL-S6 inputs"),
+        ("run", "run or resume one independent RL-S6 seed"),
+        ("finalize", "aggregate the five seed gates without changing them"),
+    ):
+        command = s6_commands.add_parser(name, help=help_text)
+        command.add_argument("--config", type=Path, required=True)
+        if name == "run":
+            command.add_argument("--seed", type=int, required=True)
+            command.add_argument("--resume", action="store_true")
+            command.add_argument("--quiet", action="store_true")
+        _add_json_option(command)
+
     inspect = commands.add_parser("inspect", help="inspect an execution")
     inspect.add_argument("--run", required=True)
     _add_json_option(inspect)
@@ -319,6 +334,23 @@ def _s5_result(options: argparse.Namespace) -> dict[str, object]:
     return result
 
 
+def _s6_result(options: argparse.Namespace) -> dict[str, object]:
+    """Run only the user-frozen RL-S6 configuration and no specialist experiment."""
+
+    from dinorl_engine.rl.s6 import run_preflight, run_seed, summarize_campaign
+    from dinorl_engine.rl.s6_config import S6Config
+
+    config = S6Config.load(options.config)
+    if options.s6_command == "preflight":
+        result = run_preflight(config, repository=Path.cwd())
+        return {"command": "s6 preflight", **result, "status": "completed"}
+    if options.s6_command == "run":
+        progress = None if options.quiet else lambda message: print(message, file=sys.stderr)
+        result = run_seed(config, seed=options.seed, resume=options.resume, progress=progress)
+        return {"command": "s6 run", **result, "status": "completed"}
+    return {"command": "s6 finalize", **summarize_campaign(config), "status": "completed"}
+
+
 def _s5c_result(options: argparse.Namespace) -> dict[str, object]:
     """Run only the calibration phase permitted before RL-S5c-A2 review."""
 
@@ -433,6 +465,22 @@ def main(
         else:
             write_error(f"{result['command']}: failed ({result.get('reason', '')})\n")
         return 0 if result["status"] == "RL_S5_CLOSED_READY_FOR_RL_L8" else 1
+    if options.command == "s6":
+        try:
+            result = _s6_result(options)
+        except (OSError, RuntimeError, ValueError) as error:
+            result = {
+                "command": f"s6 {options.s6_command}",
+                "reason": str(error),
+                "status": "failed",
+            }
+        if options.json:
+            write(json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n")
+        elif result["status"] == "completed":
+            write(f"{result['command']}: completed\n")
+        else:
+            write_error(f"{result['command']}: failed ({result.get('reason', '')})\n")
+        return 0 if result["status"] == "completed" else 1
     if options.command == "s5b":
         try:
             result = _s5b_result(options)
