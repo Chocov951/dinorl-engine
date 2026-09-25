@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v2/rl/s6-publication-evaluation-v2.schema.json",
+  "title": "DinoRL RL-S6 paired publication evaluation v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "bootstrap", "opponents", "main", "acceptance_criteria", "rejection_criteria", "failed_criteria", "decision", "extension_required"],
+  "properties": {
+    "format": {"const": "rl-s6-publication-evaluation-v2"},
+    "bootstrap": {"type": "object"},
+    "opponents": {"type": "object"},
+    "main": {"type": "object"},
+    "acceptance_criteria": {"type": "object"},
+    "rejection_criteria": {"type": "object"},
+    "failed_criteria": {"type": "array", "items": {"type": "string"}},
+    "decision": {"enum": ["pass", "fail", "inconclusive"]},
+    "extension_required": {"type": "boolean"}
+  }
+}

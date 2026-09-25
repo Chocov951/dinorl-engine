@@ -21,6 +21,10 @@ SCHEMA_FILES = (
     "snapshot-manifest-v1.schema.json",
     "snapshot-registry-v1.schema.json",
     "s6-publication-evaluation-v1.schema.json",
+    "s6-publication-evaluation-v2.schema.json",
+    "s6-campaign-result-v2.schema.json",
+    "s6-publication-evaluation-v3.schema.json",
+    "s6-campaign-result-v3.schema.json",
 )
 
 type JsonObject = dict[str, Any]

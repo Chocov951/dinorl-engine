@@ -1,0 +1,11 @@
+{
+  "format": "rl-s6-publication-evaluation-v2",
+  "bootstrap": {},
+  "opponents": {},
+  "main": {},
+  "acceptance_criteria": {},
+  "rejection_criteria": {},
+  "failed_criteria": [],
+  "decision": "pass",
+  "extension_required": false
+}

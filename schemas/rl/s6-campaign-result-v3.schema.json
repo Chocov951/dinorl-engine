@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v3/rl/s6-campaign-result-v3.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "source_v1_decision", "source_v2_decision", "decision", "conforming_seed_count", "required_conforming_seed_count", "seeds", "no_training", "no_new_matches"],
+  "properties": {
+    "format": {"const": "rl-s6-campaign-result-v3"},
+    "source_v1_decision": {"const": "FAILED_RL_S6"},
+    "source_v2_decision": {"type": "string"},
+    "decision": {"enum": ["RL_S6_V3_PASSED", "FAILED_RL_S6_V3"]},
+    "conforming_seed_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "required_conforming_seed_count": {"const": 4},
+    "seeds": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/seed"}},
+    "no_training": {"const": true},
+    "no_new_matches": {"const": true}
+  },
+  "$defs": {
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed", "candidate_unit", "checkpoint_sha256", "v2_gate_sha256", "v2_records_sha256", "gate"],
+      "properties": {
+        "seed": {"type": "integer"},
+        "candidate_unit": {"type": "integer"},
+        "checkpoint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "v2_gate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "v2_records_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "gate": {"$ref": "#/$defs/gate"}
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "blocking_criteria", "failed_criteria", "warnings", "individual_drops", "decision"],
+      "properties": {
+        "format": {"const": "rl-s6-publication-evaluation-v3"},
+        "blocking_criteria": {"type": "object"},
+        "failed_criteria": {"type": "array", "items": {"type": "string"}},
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "individual_drops": {"type": "object"},
+        "decision": {"enum": ["pass", "fail"]}
+      }
+    }
+  }
+}

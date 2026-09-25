@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v2/rl/s6-campaign-result-v2.schema.json",
+  "title": "DinoRL RL-S6 paired re-evaluation campaign v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "source_campaign", "source_decision", "decision", "conforming_seed_count", "required_conforming_seed_count", "seeds", "no_training"],
+  "properties": {
+    "format": {"const": "rl-s6-campaign-result-v2"},
+    "source_campaign": {"type": "string"},
+    "source_decision": {"const": "FAILED_RL_S6"},
+    "decision": {"enum": ["RL_S6_V2_PASSED", "FAILED_RL_S6_V2"]},
+    "conforming_seed_count": {"type": "integer", "minimum": 0, "maximum": 5},
+    "required_conforming_seed_count": {"const": 4},
+    "seeds": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/seed"}},
+    "no_training": {"const": true}
+  },
+  "$defs": {
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed", "candidate_unit", "checkpoint_sha256", "gate", "extension_games"],
+      "properties": {
+        "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+        "candidate_unit": {"type": "integer", "minimum": 1},
+        "checkpoint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "gate": {"$ref": "#/$defs/gate"},
+        "extension_games": {"type": "integer", "minimum": 0}
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "bootstrap", "opponents", "main", "acceptance_criteria", "rejection_criteria", "failed_criteria", "decision", "extension_required"],
+      "properties": {
+        "format": {"const": "rl-s6-publication-evaluation-v2"},
+        "bootstrap": {"type": "object"},
+        "opponents": {"type": "object"},
+        "main": {"type": "object"},
+        "acceptance_criteria": {"type": "object"},
+        "rejection_criteria": {"type": "object"},
+        "failed_criteria": {"type": "array", "items": {"type": "string"}},
+        "decision": {"enum": ["pass", "fail", "inconclusive"]},
+        "extension_required": {"type": "boolean"}
+      }
+    }
+  }
+}

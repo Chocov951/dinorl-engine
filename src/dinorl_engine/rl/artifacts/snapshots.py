@@ -38,6 +38,7 @@ __all__ = [
     "load_published_policy",
     "publish_policy_snapshot",
     "replay_policy_actions",
+    "runtime_contract_hashes",
 ]
 
 _IDENTIFIER: Final = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
@@ -116,6 +117,12 @@ def _contracts_with_hashes() -> dict[str, str]:
         "action_sha256": _hash_paths([_module_path(actions)]),
         "observation_sha256": _hash_paths([observation_path, canonical_path]),
     }
+
+
+def runtime_contract_hashes() -> dict[str, str]:
+    """Return the exact engine and observation contract bound into a snapshot."""
+
+    return _contracts_with_hashes()
 
 
 def _atomic_write(path: Path, content: bytes) -> None:

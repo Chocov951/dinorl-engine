@@ -66,6 +66,23 @@ def _build_parser() -> argparse.ArgumentParser:
             command.add_argument("--resume", action="store_true")
             command.add_argument("--quiet", action="store_true")
         _add_json_option(command)
+    reevaluate_v2 = s6_commands.add_parser(
+        "reevaluate-v2", help="server-only paired re-evaluation of immutable RL-S6 v1 candidates"
+    )
+    reevaluate_v2.add_argument("--config", type=Path, required=True)
+    reevaluate_v2.add_argument("--source-run", type=Path, required=True)
+    reevaluate_v2.add_argument("--output-dir", type=Path, required=True)
+    reevaluate_v2.add_argument("--protocol", type=Path, required=True)
+    reevaluate_v2.add_argument("--dry-run", action="store_true")
+    reevaluate_v2.add_argument("--quiet", action="store_true")
+    _add_json_option(reevaluate_v2)
+    recalculate_v3 = s6_commands.add_parser(
+        "recalculate-v3", help="derive the immutable RL-S6 V3 decision from completed V2 artifacts"
+    )
+    recalculate_v3.add_argument("--source-v2", type=Path, required=True)
+    recalculate_v3.add_argument("--output-dir", type=Path, required=True)
+    recalculate_v3.add_argument("--dry-run", action="store_true")
+    _add_json_option(recalculate_v3)
 
     inspect = commands.add_parser("inspect", help="inspect an execution")
     inspect.add_argument("--run", required=True)
@@ -337,6 +354,16 @@ def _s5_result(options: argparse.Namespace) -> dict[str, object]:
 def _s6_result(options: argparse.Namespace) -> dict[str, object]:
     """Run only the user-frozen RL-S6 configuration and no specialist experiment."""
 
+    if options.s6_command == "recalculate-v3":
+        from dinorl_engine.rl.s6_v3_runner import recalculate_v3
+
+        result = recalculate_v3(
+            source_v2_directory=options.source_v2,
+            output_directory=options.output_dir,
+            dry_run=options.dry_run,
+        )
+        return {"command": "s6 recalculate-v3", **result, "status": "completed"}
+
     from dinorl_engine.rl.s6 import run_preflight, run_seed, summarize_campaign
     from dinorl_engine.rl.s6_config import S6Config
 
@@ -348,6 +375,24 @@ def _s6_result(options: argparse.Namespace) -> dict[str, object]:
         progress = None if options.quiet else lambda message: print(message, file=sys.stderr)
         result = run_seed(config, seed=options.seed, resume=options.resume, progress=progress)
         return {"command": "s6 run", **result, "status": "completed"}
+    if options.s6_command == "reevaluate-v2":
+        from dinorl_engine.rl.s6_evaluation_v2_config import S6EvaluationV2Config
+        from dinorl_engine.rl.s6_v2_runner import reevaluate_v2
+
+        progress = None if options.quiet else lambda message: print(message, file=sys.stderr)
+        result = reevaluate_v2(
+            config,
+            source_directory=options.source_run,
+            output_directory=options.output_dir,
+            protocol=S6EvaluationV2Config.load(options.protocol),
+            dry_run=options.dry_run,
+            progress=progress,
+        )
+        return {
+            "command": "s6 reevaluate-v2",
+            **result,
+            "status": "completed",
+        }
     return {"command": "s6 finalize", **summarize_campaign(config), "status": "completed"}
 
 

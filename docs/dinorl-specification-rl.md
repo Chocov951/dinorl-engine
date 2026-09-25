@@ -1972,6 +1972,28 @@ de cette clôture sont :
 constituent la prochaine étape. `RL-S6` reste non exécuté et ne peut être déclaré réussi
 avant une validation conforme sur cinq seeds.
 
+### Addendum — mesure corrective `RL-S6 v2`
+
+La campagne `rl-s6-v1` et sa décision restent des artefacts historiques immuables. Si
+son gate confronte des volumes, des positions ou des flux RNG différents entre les
+modes déterministe et stochastique, une mesure corrective est autorisée uniquement dans
+un nouveau répertoire versionné. Elle doit réemployer les checkpoints vérifiés sans
+entraînement, apparier carte, rôles, initiative, adversaire et identifiant de
+confrontation dans les deux modes, puis décider avec des IC bootstrap appariés définis
+avant la mesure. Un résultat indécis déclenche une extension de volume fixe ; le pool
+bêta reste strictement diagnostique et ne modifie aucun seuil après observation.
+
+### Addendum — décision dérivée `RL-S6 v3`
+
+Une V3 peut dériver une décision depuis les seuls artefacts V2, sans poids, PPO ni match,
+si la chute individuelle déterministe-vers-stochastique mesure une divergence argmax et
+non un effondrement du mode de déploiement. Ses critères bloquants sont alors les bornes
+IC95 des scores absolus (random, moyenne et bots individuels) et la borne haute de la
+chute moyenne. Toute chute individuelle supérieure à 0,15, ou dont l'IC traverse 0,15,
+reste publiée en `warning`, mais ne peut pas devenir un échec caché. La V3 doit contenir
+les hashes de provenance V1, V2, checkpoints et records ; elle ne réécrit jamais V1 ou
+V2.
+
 ### RL-L9 — Orchestration complète et progression
 
 **Livrer**

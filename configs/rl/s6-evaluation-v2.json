@@ -1,0 +1,6 @@
+{
+  "format": "dinorl-s6-evaluation-v2-config-v1",
+  "confrontations_per_opponent": 200,
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed": 20260924
+}

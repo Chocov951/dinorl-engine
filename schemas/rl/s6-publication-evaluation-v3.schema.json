@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dinorl.dev/v3/rl/s6-publication-evaluation-v3.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "blocking_criteria", "failed_criteria", "warnings", "individual_drops", "decision"],
+  "properties": {
+    "format": {"const": "rl-s6-publication-evaluation-v3"},
+    "blocking_criteria": {"type": "object"},
+    "failed_criteria": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "individual_drops": {"type": "object"},
+    "decision": {"enum": ["pass", "fail"]}
+  }
+}
