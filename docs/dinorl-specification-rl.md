@@ -1969,8 +1969,11 @@ de cette clôture sont :
 - `reports/rl/RL-S5-closure-report.md` pour l'audit de transition.
 
 `RL-S5` est `RL_S5_CLOSED_READY_FOR_RL_L8`. `RL-L8` et sa campagne serveur `RL-S6`
-constituent la prochaine étape. `RL-S6` reste non exécuté et ne peut être déclaré réussi
-avant une validation conforme sur cinq seeds.
+ont été clôturés par une décision versionnée, sans réécrire les campagnes antérieures.
+
+Après la décision dérivée traçable `RL_S6_V3_PASSED` (cinq seeds conformes, sans poids
+ni matchs supplémentaires), RL-L8 est validé et RL-L9 est autorisé. Les résultats V1
+et V2 restent des décisions historiques immuables.
 
 ### Addendum — mesure corrective `RL-S6 v2`
 

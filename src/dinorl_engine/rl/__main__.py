@@ -36,20 +36,38 @@ def _build_parser() -> argparse.ArgumentParser:
 
     train = commands.add_parser("train", help="start an experiment")
     train.add_argument("--config", type=Path, required=True)
+    train.add_argument("--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3"))
+    train.add_argument("--owner", default="local")
+    train.add_argument("--run-id")
+    train.add_argument("--idempotency-key")
     _add_json_option(train)
 
     resume = commands.add_parser("resume", help="resume from a checkpoint")
     resume.add_argument("--checkpoint", required=True)
     resume.add_argument("--units", type=int, required=True)
+    resume.add_argument("--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3"))
+    resume.add_argument("--owner", default="local")
+    resume.add_argument("--idempotency-key")
     _add_json_option(resume)
 
     evaluate = commands.add_parser("evaluate", help="evaluate a checkpoint")
     evaluate.add_argument("--checkpoint", required=True)
     evaluate.add_argument("--suite", choices=("deterministic", "publication"), required=True)
+    evaluate.add_argument(
+        "--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3")
+    )
+    evaluate.add_argument("--owner", default="local")
+    evaluate.add_argument("--idempotency-key")
     _add_json_option(evaluate)
 
     publish = commands.add_parser("publish", help="publish a checkpoint")
     publish.add_argument("--checkpoint", required=True)
+    publish.add_argument("--eligibility", type=Path, required=True)
+    publish.add_argument(
+        "--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3")
+    )
+    publish.add_argument("--owner", default="local")
+    publish.add_argument("--idempotency-key")
     _add_json_option(publish)
 
     s6 = commands.add_parser("s6", help="run the frozen five-seed RL-S6 beta validation")
@@ -84,17 +102,42 @@ def _build_parser() -> argparse.ArgumentParser:
     recalculate_v3.add_argument("--dry-run", action="store_true")
     _add_json_option(recalculate_v3)
 
+    s7 = commands.add_parser("s7", help="run the resumable RL-S7 server capacity calibration")
+    s7_commands = s7.add_subparsers(dest="s7_command", required=True)
+    for name, help_text in (
+        ("preflight", "verify RL-S6 V3 provenance and branch immutable recoveries"),
+        ("run", "run or resume exactly one RL-S7 server seed"),
+        ("analyze", "derive capacity timings from completed RL-S7 curves"),
+    ):
+        command = s7_commands.add_parser(name, help=help_text)
+        command.add_argument("--config", type=Path, required=True)
+        command.add_argument("--source-s6-config", type=Path, required=True)
+        command.add_argument("--output-dir", type=Path, required=True)
+        if name == "preflight":
+            command.add_argument("--source-v3", type=Path, required=True)
+            command.add_argument("--dry-run", action="store_true")
+        if name == "run":
+            command.add_argument("--seed", type=int, required=True)
+            command.add_argument("--resume", action="store_true")
+            command.add_argument("--quiet", action="store_true")
+        _add_json_option(command)
+
     inspect = commands.add_parser("inspect", help="inspect an execution")
     inspect.add_argument("--run", required=True)
+    inspect.add_argument(
+        "--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3")
+    )
     _add_json_option(inspect)
 
     status = commands.add_parser("status", help="show job status")
     status.add_argument("--job", required=True)
+    status.add_argument("--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3"))
     status.add_argument("--follow", action="store_true")
     _add_json_option(status)
 
     cancel = commands.add_parser("cancel", help="cancel a job")
     cancel.add_argument("--job", required=True)
+    cancel.add_argument("--database", type=Path, default=Path("artifacts/rl/orchestration.sqlite3"))
     _add_json_option(cancel)
 
     s5 = commands.add_parser("s5", help="close and audit the completed RL-S5 campaigns")
@@ -396,6 +439,118 @@ def _s6_result(options: argparse.Namespace) -> dict[str, object]:
     return {"command": "s6 finalize", **summarize_campaign(config), "status": "completed"}
 
 
+def _s7_result(options: argparse.Namespace) -> dict[str, object]:
+    """Run only explicitly requested RL-S7 calibration operations."""
+
+    from dinorl_engine.rl.s6_config import S6Config
+    from dinorl_engine.rl.s7 import analyze, run_preflight, run_seed
+    from dinorl_engine.rl.s7_config import S7Config
+
+    config = S7Config.load(options.config)
+    source_s6_config = S6Config.load(options.source_s6_config)
+    if options.s7_command == "preflight":
+        result = run_preflight(
+            config,
+            source_v3=options.source_v3,
+            source_s6_config=source_s6_config,
+            output_directory=options.output_dir,
+            dry_run=options.dry_run,
+        )
+    elif options.s7_command == "run":
+        progress = None if options.quiet else lambda message: print(message, file=sys.stderr)
+        result = run_seed(
+            config,
+            source_s6_config=source_s6_config,
+            output_directory=options.output_dir,
+            seed=options.seed,
+            resume=options.resume,
+            progress=progress,
+        )
+    else:
+        result = analyze(config, output_directory=options.output_dir)
+    return {"command": f"s7 {options.s7_command}", **result, "status": "completed"}
+
+
+def _l9_result(options: argparse.Namespace) -> dict[str, object]:
+    """Expose the local orchestration service used by the future HTTP API."""
+
+    from dinorl_engine.rl.orchestration.database import JobPriority, OrchestrationStore
+
+    store = OrchestrationStore(options.database)
+    if options.command == "train":
+        try:
+            payload = options.config.read_bytes()
+            value = json.loads(payload)
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError("training config is unreadable JSON") from error
+        if not isinstance(value, dict):
+            raise ValueError("training config must be a JSON object")
+        experiment_id = value.get("experiment_id")
+        budget = value.get("budget_units")
+        if not isinstance(experiment_id, str) or type(budget) is not int:
+            raise ValueError("training config lacks experiment_id or budget_units")
+        run_id = options.run_id or f"run-{experiment_id}"
+        key = options.idempotency_key or f"train-{run_id}"
+        store.register_experiment(experiment_id, payload)
+        job_id = store.submit_training(
+            owner_id=options.owner, run_id=run_id, budget_units=budget, key=key
+        )
+        return {"command": "train", "job_id": job_id, "run_id": run_id, "status": "queued"}
+    if options.command == "resume":
+        run_id = f"resume-{options.checkpoint}"
+        job_id = store.submit_training(
+            owner_id=options.owner,
+            run_id=run_id,
+            budget_units=options.units,
+            key=options.idempotency_key or f"resume-{options.checkpoint}-{options.units}",
+        )
+        return {"command": "resume", "job_id": job_id, "run_id": run_id, "status": "queued"}
+    if options.command == "evaluate":
+        cache_key = f"{options.checkpoint}/{options.suite}"
+        cached = store.cached_evaluation(cache_key)
+        if cached is not None:
+            return {
+                "command": "evaluate",
+                "cache_key": cache_key,
+                "cached_result": cached,
+                "status": "completed",
+            }
+        job_id = store.submit_job(
+            owner_id=options.owner,
+            run_id=None,
+            priority=JobPriority.P1,
+            kind="evaluation",
+            key=options.idempotency_key or f"evaluate-{cache_key}",
+        )
+        return {"command": "evaluate", "job_id": job_id, "cache_key": cache_key, "status": "queued"}
+    if options.command == "publish":
+        try:
+            eligibility = json.loads(options.eligibility.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError("publication eligibility report is unreadable") from error
+        if not isinstance(eligibility, dict) or eligibility.get("eligible") is not True:
+            raise ValueError("publication requires an eligible evaluation report")
+        job_id = store.submit_job(
+            owner_id=options.owner,
+            run_id=None,
+            priority=JobPriority.P1,
+            kind="publication",
+            key=options.idempotency_key or f"publish-{options.checkpoint}",
+        )
+        return {"command": "publish", "job_id": job_id, "status": "queued"}
+    if options.command == "status":
+        state = store.status(options.job)
+        return {"command": "status", "job_status": state["status"], **state, "status": "completed"}
+    if options.command == "cancel":
+        store.cancel(options.job)
+        state = store.status(options.job)
+        return {"command": "cancel", "job_status": state["status"], **state, "status": "completed"}
+    if options.command == "inspect":
+        state = store.status_for_run(options.run)
+        return {"command": "inspect", "job_status": state["status"], **state, "status": "completed"}
+    raise ValueError("command is not implemented by RL-L9")
+
+
 def _s5c_result(options: argparse.Namespace) -> dict[str, object]:
     """Run only the calibration phase permitted before RL-S5c-A2 review."""
 
@@ -526,6 +681,34 @@ def main(
         else:
             write_error(f"{result['command']}: failed ({result.get('reason', '')})\n")
         return 0 if result["status"] == "completed" else 1
+    if options.command == "s7":
+        try:
+            result = _s7_result(options)
+        except (OSError, RuntimeError, ValueError) as error:
+            result = {
+                "command": f"s7 {options.s7_command}",
+                "reason": str(error),
+                "status": "failed",
+            }
+        if options.json:
+            write(json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n")
+        elif result["status"] == "completed":
+            write(f"{result['command']}: completed\n")
+        else:
+            write_error(f"{result['command']}: failed ({result.get('reason', '')})\n")
+        return 0 if result["status"] == "completed" else 1
+    if options.command in {"train", "resume", "evaluate", "publish", "status", "cancel", "inspect"}:
+        try:
+            result = _l9_result(options)
+        except (OSError, RuntimeError, ValueError) as error:
+            result = {"command": options.command, "reason": str(error), "status": "failed"}
+        if options.json:
+            write(json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n")
+        elif result["status"] == "completed" or result["status"] == "queued":
+            write(f"{result['command']}: {result['status']}\n")
+        else:
+            write_error(f"{result['command']}: failed ({result.get('reason', '')})\n")
+        return 0 if result["status"] in {"completed", "queued"} else 1
     if options.command == "s5b":
         try:
             result = _s5b_result(options)
